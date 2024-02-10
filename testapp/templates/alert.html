@@ -1,0 +1,25 @@
+<!-- storing my unused code here
+  <body><form method="post" action="{% url 'reports' %}">
+    {% csrf_token %}
+  <button type=submit class="approve-btn"  >Approve transaction</button></form>
+  <form method="post" action="{% url 'reports' %}">
+    {% csrf_token %}
+  <button type=submit class="reject-btn">Deny transaction</button></form></body>
+  <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+    <input type="checkbox" id="identify" name="identify" value="approve">
+    <label for="identify"> Identification was provided</label><br>
+    <form method="get" action="{% url 'blacklist' %}">{%csrf token %}
+        filter by:
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="action"><br>
+        <label for="transactionid">tracaction id:</label>
+        <input type="text" id="transactionid" name="action"><br>
+        {{ search_form.as_p }}
+        <button type="submit">Search</button>
+    </form>
+    
+    {% for item in queryset %}
+        {# Display your model data here #}
+        {{ item.name }}
+    {% endfor %}-->

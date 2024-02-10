@@ -1,0 +1,83 @@
+img{
+	width: 100%;
+  height: 100%;
+}
+.login {
+    height: 100%;
+    width: 100%;
+    background: radial-gradient(#081e46, #0a1553);
+    position: fixed;
+}
+.login_box {
+    width: 1050px;
+    height: 600px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 1px 4px 22px -8px #0004;
+    display: flex;
+    overflow: hidden;
+}
+.login_box .left{
+  width: 41%;
+  height: 100%;
+  padding: 25px 25px;
+  
+}
+.login_box .right{
+  width: 59%;
+  height: 100%  
+}
+
+
+.left .contact{
+	display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    height: 100%;
+    width: 73%;
+    margin: auto;
+}
+.left h3{
+  text-align: center;
+  margin-bottom: auto;
+}
+.left input {
+    border: none;
+    width: 80%;
+    margin: 15px 0px;
+    border-bottom: 1px solid #4f30677d;
+    padding: 7px 9px;
+    width: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-weight: 600;
+    font-size: 14px;
+}
+.left{
+	background: linear-gradient(-45deg, #dcd7e0, #fff);
+}
+.submit {
+    border: none;
+    padding: 15px 70px;
+    border-radius: 8px;
+    display: block;
+    margin: auto;
+    margin-top: 120px;
+    background: #153eaf;
+    color: #fff;
+    font-weight: bold;
+    -webkit-box-shadow: 0px 9px 15px -11px rgb(23, 25, 107);
+    -moz-box-shadow: 0px 9px 15px -11px rgb(18, 28, 112);
+    box-shadow: 0px 9px 15px -11px rgb(16, 44, 119);
+}
+
+.right {
+	background: linear-gradient(212.38deg, rgba(13, 20, 121, 0.7) 0%, rgba(7, 7, 7, 0.71) 100%);
+	color: #fff;
+	position: relative;
+}

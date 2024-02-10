@@ -1,0 +1,19 @@
+<body>{% include 'header.html' %}{% include 'reportmenu.html' %}
+    
+
+    <ul> {% for items in set %}
+        <li>
+            <p> 
+                <form method="post" action="{% url 'blacklist' %}">
+                    {{ items }}
+                    <input type="hidden"name="item_value" value="{{ items }}">
+                    {% csrf_token %}                   
+                    <button type=submit class="approve-btn" name="action" value="remove" >Remove
+                    </button>
+            
+                </form>
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+</body>

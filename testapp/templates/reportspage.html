@@ -1,0 +1,47 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'alerts.css' %}" >
+
+<body>{% include 'header.html' %}{% include 'reportmenu.html' %}
+
+
+    <p>
+        <button onclick=" openform()">Create report</button>
+        <div id="formModal" class="modal">
+
+            <div class="modal-content">
+                <span class="close" onclick="closeform()">&times;</span>
+                <form method='post' action="{% url 'reports' %}">
+                    {% csrf_token %}
+                    <label for="transactionid">Transaction Id:</label><br>
+                    <input type="text" id="transactionid" name="transactionid"><br>
+                    <label for="staffid">Staff Id:</label><br>
+                    <input type="text" id="staffid" name="staffid"><br>
+                    Report type:<br>
+                    <input type="radio" id="false positive" name="report_status" value="false positive"><br>
+                    <label for="false positive">False positive</label><br>
+                    <input type="radio" id="false negative" name="report_status" value="false negative"><br>
+                    <label for="false negative">False negative</label><br>
+                    <input type="submit" name="action" value="submit" >
+                </form>
+            </div>
+        </div>
+        
+    </p>
+    <p>reports are:</p>
+    <ul> {% for items in set %}
+        <li>
+            <p> 
+                <form method="post" action="{% url 'reports' %}">
+                    {{ items }}
+                    <input type="hidden"name="item_value" value="{{ items }}">
+                    {% csrf_token %}                   
+                    <button type=submit class="approve-btn" name="action" value="delete report" >Delete report
+                    </button>
+            
+                </form>
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+    <script src="{% static 'report.js' %}"></script>
+</body>
