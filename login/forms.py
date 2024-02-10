@@ -3,5 +3,3 @@ from django.contrib.auth.forms import AuthenticationForm
 class loginform(AuthenticationForm):
     username=AuthenticationForm()
     password=AuthenticationForm()
-class resetform(AuthenticationForm):
-    name=AuthenticationForm()
