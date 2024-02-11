@@ -1,6 +1,6 @@
 from django.http import HttpResponse 
 from django.shortcuts import render, redirect
-from testapp.models import transaction,alert,report,blacklist
+from testapp.models import transaction,alert,report,blacklist,CustomUser
 import pandas as pd
 import numpy as np
 import joblib 
@@ -10,10 +10,10 @@ from django.shortcuts import get_object_or_404
 from .forms import SearchForm
 from django.core.mail import send_mail
 loaded_model = joblib.load('trained_model.joblib')
-always(10)
+
 def prediction(data):
     return loaded_model.predict(data)
-
+always(20)
 
 def home(request): 
     return render(request, 'homepage.html')
@@ -42,7 +42,9 @@ def alerts(request):
             new.save()
     
         if done==1:
-            new_entry = alert.objects.create( transactionid=tems['transactionid'],staffid=2, alert_status='waiting')
+            user = request.user
+            mystaffid = user.staffid
+            new_entry = alert.objects.create( transactionid=tems['transactionid'],staffid=mystaffid, alert_status='waiting')
             new_entry.save()
             new.transaction_state='predicted'
             new.save()
@@ -86,8 +88,23 @@ def alerts(request):
                 all['alert_status']='handled'
   
     swe = [item for item in swe if item['alert_status'] != 'handled']
+    transactlist=[]
+    user = request.user
+    if user.is_authenticated:
+       
 
-    content={'set':swe}
+        staff_location = user.location
+        
+        transactions = transaction.objects.filter(location=staff_location)
+        transactionvalues=transactions.values()
+        for all in transactionvalues:
+            
+            transactlist.append(all)
+      
+
+    new = [dict1 for dict1 in swe for dict2 in transactlist if int(dict1['transactionid']) == dict2['transactionid']]
+
+    content={'set':new}
             
     return render(request,'alertpage.html',content)     
 

@@ -134,3 +134,5 @@ EMAIL_HOST_PASSWORD = 'wicr rxft zxat mrcu'
 
 DEFAULT_FROM_EMAIL = 'dnnndungu@gmail.com' 
 SERVER_EMAIL = 'dnnndungu@gmail.com'
+
+AUTH_USER_MODEL = 'testapp.CustomUser'
