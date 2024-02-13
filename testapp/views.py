@@ -1,24 +1,38 @@
 from django.http import HttpResponse 
-from django.shortcuts import render, redirect
-from testapp.models import transaction,alert,report,blacklist,CustomUser
+from django.shortcuts import render, redirect,get_object_or_404
+from testapp.models import transaction,alert,report,blacklist,systemsettings
 import pandas as pd
 import numpy as np
 import joblib 
 from testapp.predictor import always
 import ast
-from django.shortcuts import get_object_or_404
-from .forms import SearchForm
-from django.core.mail import send_mail
+from .forms import SearchForm,SystemSettingsForm
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+
 loaded_model = joblib.load('trained_model.joblib')
 
 def prediction(data):
     return loaded_model.predict(data)
-always(20)
 
-def home(request): 
-    return render(request, 'homepage.html')
 
+def home(request):
+    user = request.user
+    name=user.username
+    if user.is_authenticated:
+        content={'set':name}
+        return render(request, 'homepage.html',content)
+    else: 
+        return render(request, 'homepage.html')
+       
+ 
+    
+@login_required
 def alerts(request):
+    alertsettings=systemsettings.objects.create(settings_class='alert')
+    alertsettings.save()
+    reportgen=systemsettings.objects.all()
+    automate=reportgen.values()
     swe=[]
     
     incoming = transaction.objects.filter(transaction_state='incoming')
@@ -107,8 +121,10 @@ def alerts(request):
     content={'set':new}
             
     return render(request,'alertpage.html',content)     
-
+@login_required
 def reports(request):
+    settings=systemsettings.objects.get(settings_class='general')
+    
     reportlist=[]
     reportspage=report.objects.filter(verification='waiting')
     reportvalues=reportspage.values()
@@ -120,19 +136,25 @@ def reports(request):
             reportlist.append(all)
 
     if request.method == 'POST':
+        user=request.user
         action=request.POST.get('action')
         report_transactionid = request.POST.get('transactionid')
-        report_staffid= request.POST.get('staffid')
+        
         reportstatus = request.POST.get('report_status')
         if action=='submit':
             
             new_entry = report.objects.create(transactionid=report_transactionid,
-            staffid=report_staffid, report_status=reportstatus, verification='waiting')
+            staffid=user.staffid, report_status=reportstatus, verification='waiting')
             new_entry.save()
             if reportstatus=='false negative':
-                new_entry = blacklist.objects.create(transactionid=report_transactionid,
-                         category='false negative')
-                new_entry.save()
+                if settings.blacklist_add=='false negatives':
+                    print(39)
+                
+                    new_entry = blacklist.objects.create(transactionid=report_transactionid,
+                            category='false negative')
+                    new_entry.save()
+                else:
+                    print(40)
         
         if action=='delete report':
             items=request.POST.get('item_value')
@@ -146,6 +168,8 @@ def reports(request):
                     reportlist.remove(all)
     content={'set':reportlist}
     return render(request, 'reportspage.html',content)
+
+@login_required
 def blacklists(request):
     blacklistfull=[]
     true_positives=[]
@@ -189,9 +213,50 @@ def blacklists(request):
    
 
     return render(request,'blacklist.html',content)
-def modelpage(request):
-    return render(request,'modelpage.html')
+
+@login_required
+def system(request):
+    settings,created=systemsettings.objects.get_or_create(settings_class='general')
+    
+   
+   
+  
+    if request.method == 'POST':
+        
+        form = SystemSettingsForm(request.POST)
+        if form.is_valid():
+            settings.automate = form.cleaned_data.get('automate')
+            settings.locations = form.cleaned_data.get('locations')
+            settings.blacklist_add = form.cleaned_data.get('blacklist_add')
+            settings.report_add = form.cleaned_data.get('report_add')
+            settings.enforce_blacklist = form.cleaned_data.get('enforce_blacklist')
+            settings.save()
+            
+            #return redirect(system)
+    else:
+        form = SystemSettingsForm(
+            initial={
+            'automate': settings.automate,
+            'locations': settings.locations,
+            'blacklist_add': settings.blacklist_add,
+            'report_add': settings.report_add,
+            'enforce_blacklist': settings.enforce_blacklist}
+        )
+    context={'form':form}
+    return render(request,'modelpage.html',context)
+
+
+
+   
+
+@login_required
 def guidelines(request):
     return render(request,'guidelines.html')
+
+
+def logout_view(request):
+    logout(request)
+   
+    return redirect(home)
 
 

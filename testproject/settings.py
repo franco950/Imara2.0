@@ -136,3 +136,4 @@ DEFAULT_FROM_EMAIL = 'dnnndungu@gmail.com'
 SERVER_EMAIL = 'dnnndungu@gmail.com'
 
 AUTH_USER_MODEL = 'testapp.CustomUser'
+LOGIN_URL = 'login'

@@ -1,6 +1,6 @@
 from django.http import HttpResponse 
 from .forms import loginform
-from testapp.views import home
+from testapp.views import alerts
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate,login
 
@@ -14,7 +14,7 @@ def loginpage(request):
             userd = authenticate(request, username=username, password=password)
             if userd is not None:
                 login(request, userd)
-                return redirect(home)
+                return redirect(alerts)
     else:
         form = loginform()
     return render(request, 'login.html', {'form': form})

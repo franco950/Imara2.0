@@ -1,14 +1,15 @@
 from django.urls import path
 from django.contrib import admin
-from .views import home,alerts,reports,modelpage,guidelines,blacklists
+from .views import home,alerts,reports,system,guidelines,blacklists,logout_view
 
 urlpatterns=[
-    path('home',home,name='home'),
+    path('',home,name='home'),
     path('alerts',alerts,name='alerts'),
     path('reports',reports,name='reports'),
     path('blacklist',blacklists,name='blacklist'),
-    path('model',modelpage,name='model'),
+    path('model',system,name='model'),
     path('guidelines',guidelines,name='guidelines'),
+     path('logout/', logout_view, name='logout'),
 
 
 ]

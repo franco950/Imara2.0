@@ -1,1 +1,8 @@
-<body>{% include 'header.html' %}<p>model</p></body>
+<!DOCTYPE html><html><body>{% include 'header.html' %}<p>model</p>
+    <h2>System Settings</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Save Settings</button>
+    </form>
+  </body></html>
