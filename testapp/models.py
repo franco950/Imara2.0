@@ -26,7 +26,7 @@ class alert(models.Model):
     alert_status=models.CharField(max_length=30)
   
     def __str__(self):
-        return f"{str(self.alertid)}  :  {self.transactionid} : {self.staffid} : {self.alert_status}"
+        return f"alert id:{str(self.alertid)}  ; transaction id:  {self.transactionid} ; staff id: {self.staffid} ; alert status: {self.alert_status}"
        
 class report(models.Model):
     reportid=models.AutoField(primary_key=True)
@@ -36,7 +36,7 @@ class report(models.Model):
     verification=models.CharField(max_length=30 )
   
     def __str__(self):
-        return f"{str(self.reportid)}  :  {self.transactionid} : {self.staffid} : {self.report_status}"
+        return f"report id:{str(self.reportid)}  ; transaction id: {self.transactionid} ; staff id: {self.staffid} ; report status: {self.report_status}"
         
 class blacklist(models.Model):
     blacklistid=models.IntegerField(primary_key=True)
@@ -44,7 +44,7 @@ class blacklist(models.Model):
     category=models.CharField(max_length=30)
 
     def __str__(self):
-        return f"{str(self.blacklistid)}  :  {self.transactionid} : {self.category }"
+        return f"blacklist id:{str(self.blacklistid)}  ;  transaction id: {self.transactionid} ; category: {self.category }"
 
 class systemsettings(models.Model):
     AUTOMATION = [

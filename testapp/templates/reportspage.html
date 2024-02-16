@@ -28,7 +28,8 @@
         
     </p>
     <p>reports are:</p>
-    <ul> {% for items in set %}
+    {% if set %}
+    <ol> {% for items in set %}
         <li>
             <p> 
                 <form method="post" action="{% url 'reports' %}">
@@ -42,6 +43,8 @@
             </p>
         </li>
         {% endfor %}
-    </ul>
+    </ol>
+    {% else %}
+    <P>no reports here</P>{% endif %}
     <script src="{% static 'report.js' %}"></script>
 </body>

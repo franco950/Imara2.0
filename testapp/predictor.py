@@ -19,7 +19,7 @@ transactions=transactiondf[transactiondf['Class']==1]
 transactions=transactions[transactions.columns[:-1]]
 fraud=transactions.copy()
 def locations():
-    list=['Kiambu01','Kiambu02','Online','Thika01','Thika02','Online']
+    list=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
     choice=random.sample(list,1)
     for item in choice:
         return item

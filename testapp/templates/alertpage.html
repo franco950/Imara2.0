@@ -5,7 +5,7 @@
 <body>
   {% include 'header.html' %}
   
-  <p>hello, the prediction is: </p>
+  <p>pending alerts: </p>
 <ul> {% for items in set %}
   <li>
       <p> <form method="post" action="{% url 'alerts' %}">{{ items }}<input type="hidden" name="item_value" value="{{ items }}">{% csrf_token %}
