@@ -25,51 +25,59 @@ def transactions(request):
     if request.method=='POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
+            locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
             
             # Process the data or save it to the database
             newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
             newentry.save()
-            incoming = transaction.objects.filter(transaction_state='incoming')
-            datas=incoming.values()
-            for tems in datas:
+            if data.get('location') not in locations:
+                newentry.transaction_state='invalid location'
+                newentry.save()
+                return JsonResponse({"error":"invalid transaction location"})
+ 
 
-                transaction_list=[]
-                neww=tems['transaction_data']    
-                neww=neww.split(',')
-                for num in neww:
-                    transaction_list.append(float(num)) 
+            transaction_list=[]
+            neww=newentry.transaction_data    
+            neww=neww.split(',')
+            for num in neww:
+                transaction_list.append(float(num)) 
 
-                input_data = np.array(transaction_list)
-                reshaped_data = input_data.reshape(1, -1)
-                new=transaction.objects.get(transactionid=(tems['transactionid']))
-               
-                try:
-                    done=prediction(reshaped_data)
-                except:
-                    new.transaction_state='invalid'
-                    new.save()
-                    return JsonResponse({"error":"invalid transaction data"})
-               
-                newid=new.transactionid
-                if done==0:
-                    pred='legitimate'
-                    new.transaction_state='predicted'
-                    new.save()
-                    
-                elif done==1:
-                    pred='fraud'
-                    transactlocation=new.location
-                    # user=CustomUser.objects.filter(location__in=transactlocation, department='agent').get() 
-                    # mystaffid = user.staffid
-                    # new_entry = alert.objects.create( transactionid=tems['transactionid'],
-                    #                                  staffid=mystaffid, alert_status='waiting')
-                    # new_entry.save()
-                    new.transaction_state='predicted'
-                    new.save()
-               
-                    # Respond with a JSON success message
-                return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
-                                 'prediction':str(pred),'mode':'manual'})
+            input_data = np.array(transaction_list)
+            reshaped_data = input_data.reshape(1, -1)
+            
+            
+            try:
+                done=prediction(reshaped_data)
+            except:
+                newentry.transaction_state='invalid data'
+                newentry.save()
+                return JsonResponse({"error":"invalid transaction data"})
+            
+            
+            
+            newid=newentry.transactionid
+            if done==0:
+                pred='legitimate'
+                newentry.transaction_state='predicted'
+                newentry.save()
+                
+            elif done==1:
+                pred='fraud'
+                transactlocation=newentry.location
+                print(transactlocation)
+                userd=CustomUser.objects.get(location=transactlocation, department='agent')
+                
+                mystaffid = userd.staffid
+                print(mystaffid)
+                new_entry = alert.objects.create( transactionid=newentry.transactionid,
+                                                    staffid=mystaffid, alert_status='waiting')
+                new_entry.save()
+                newentry.transaction_state='predicted'
+                newentry.save()
+            
+                # Respond with a JSON success message
+            return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
+                                'prediction':str(pred),'mode':'manual'})
         except json.JSONDecodeError:
             # Handle invalid JSON in the request
             return JsonResponse({'error': 'Invalid JSON in the request'}, status=400)
@@ -96,10 +104,11 @@ def alerts(request):
             staff_location = user.location
         elif user.department=='manager':
             area=user.location
-            staff_location = locations.filter(f'^{re.escape(area)}')
+            staff_location = [loc for loc in locations if re.match(f'^{re.escape(area)}', loc)]
+            
         else:
             #for support staff and admin
-            staff_location='Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02'
+            staff_location=locations
    
 
     if request.method == 'POST':
