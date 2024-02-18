@@ -11,78 +11,75 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
 from rest_framework.decorators import api_view
-from rest_framework import status
+from rest_framework import status,generics
 from rest_framework.response import Response
 import re
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 loaded_model = joblib.load('trained_model.joblib')
 
 def prediction(data):
     return loaded_model.predict(data)
-
+locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def transactions(request):
     if request.method=='POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
-            locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
-            
-            # Process the data or save it to the database
-            newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
-            newentry.save()
-            if data.get('location') not in locations:
-                newentry.transaction_state='invalid location'
-                newentry.save()
-                return JsonResponse({"error":"invalid transaction location"})
- 
-
-            transaction_list=[]
-            neww=newentry.transaction_data    
-            neww=neww.split(',')
-            for num in neww:
-                transaction_list.append(float(num)) 
-
-            input_data = np.array(transaction_list)
-            reshaped_data = input_data.reshape(1, -1)
-            
-            
-            try:
-                done=prediction(reshaped_data)
-            except:
-                newentry.transaction_state='invalid data'
-                newentry.save()
-                return JsonResponse({"error":"invalid transaction data"})
-            
-            
-            
-            newid=newentry.transactionid
-            if done==0:
-                pred='legitimate'
-                newentry.transaction_state='predicted'
-                newentry.save()
-                
-            elif done==1:
-                pred='fraud'
-                transactlocation=newentry.location
-                print(transactlocation)
-                userd=CustomUser.objects.get(location=transactlocation, department='agent')
-                
-                mystaffid = userd.staffid
-                print(mystaffid)
-                new_entry = alert.objects.create( transactionid=newentry.transactionid,
-                                                    staffid=mystaffid, alert_status='waiting')
-                new_entry.save()
-                newentry.transaction_state='predicted'
-                newentry.save()
-            
-                # Respond with a JSON success message
-            return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
-                                'prediction':str(pred),'mode':'manual'})
         except json.JSONDecodeError:
             # Handle invalid JSON in the request
             return JsonResponse({'error': 'Invalid JSON in the request'}, status=400)
-        
+            
+        # Process the data or save it to the database
+        newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
+        newentry.save()
+        if data.get('location') not in locations:
+            newentry.transaction_state='invalid location'
+            newentry.save()
+            return JsonResponse({"error":"invalid transaction location"})
 
+
+        transaction_list=[]
+        neww=newentry.transaction_data    
+        neww=neww.split(',')
+        for num in neww:
+            transaction_list.append(float(num)) 
+
+        input_data = np.array(transaction_list)
+        reshaped_data = input_data.reshape(1, -1)
+                
+        try:
+            done=prediction(reshaped_data)
+        except:
+            newentry.transaction_state='invalid data'
+            newentry.save()
+            return JsonResponse({"error":"invalid transaction data"})
+        
+        newid=newentry.transactionid
+        if done==0:
+            pred='legitimate'
+            newentry.transaction_state='predicted'
+            newentry.save()
+            
+        elif done==1:
+            pred='fraud'
+            transactlocation=newentry.location
+            userd=CustomUser.objects.get(location=transactlocation, department='agent')
+            
+            mystaffid = userd.staffid
+            
+            new_entry = alert.objects.create( transactionid=newentry.transactionid,
+                                                staffid=mystaffid, alert_status='waiting')
+            new_entry.save()
+            newentry.transaction_state='predicted'
+            newentry.save()
+        
+            # Respond with a JSON success message
+        return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
+                            'prediction':str(pred),'mode':'manual'})
+        
+        
 def home(request):
     user = request.user
     name=user.username
@@ -91,13 +88,10 @@ def home(request):
         return render(request, 'homepage.html',content)
     else: 
         return render(request, 'homepage.html')
-      
-
-    
+  
 @login_required
 def alerts(request):
     
-    locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
     user = request.user
     if user.is_authenticated:
         if user.department=='agent':
@@ -110,7 +104,6 @@ def alerts(request):
             #for support staff and admin
             staff_location=locations
    
-
     if request.method == 'POST':
 
         items = request.POST.get('item_value')
@@ -118,8 +111,7 @@ def alerts(request):
         items=items.split(';')
         alertid=items[0].split(':')
         myalertid=alertid[1]
-        alertchange=alert.objects.get(alertid=myalertid)
-        
+        alertchange=alert.objects.get(alertid=myalertid)  
 
         if action=='reject':
             
@@ -145,9 +137,27 @@ def alerts(request):
         content={'set':alertpage}
         return render(request,'alertpage.html',content)    
     else:
-        return render(request,'alertpage.html')
-            
-      
+        return render(request,'alertpage.html') 
+
+@api_view(['GET'])   
+@permission_classes([IsAuthenticated])
+def feedback(request):
+     if request.method=='GET':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            identity=data.get('transaction id')
+        except json.JSONDecodeError:
+            # Handle invalid JSON in the request
+            return JsonResponse({'error': 'Invalid JSON in the request'}, status=400)
+        try:
+            alertreturn=alert.objects.get(transactionid=identity)
+        except:
+            return JsonResponse({'error': 'Transaction id not found'})
+        staff_member=alertreturn.staffid
+        alert_id= alertreturn.alertid
+        alert_status=alertreturn.alert_status
+        return JsonResponse({'message': 'Data retrieved successfully','transaction id' :str(identity),
+        'alert id' : str(alert_id),'staff id' : str(staff_member), 'alert status' : str(alert_status)})
   
 @login_required
 def reports(request):
@@ -240,7 +250,6 @@ def system(request):
 @login_required
 def guidelines(request):
     return render(request,'guidelines.html')
-
 
 def logout_view(request):
     logout(request)
