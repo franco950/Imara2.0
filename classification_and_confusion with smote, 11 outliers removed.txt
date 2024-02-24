@@ -1,0 +1,40 @@
+ Training time:
+647.9877097606659 seconds (10.799795162677764 minutes)
+
+ Accuracy:
+0.9994078585627881
+
+ depth:
+38
+
+ feature importance:
+[0.00646762 0.01048473 0.03868849 0.07017336 0.10488957 0.0030233
+ 0.00753605 0.01096429 0.00627043 0.03011085 0.13102854 0.05683481
+ 0.10569375 0.00579221 0.22049636 0.00404348 0.04176485 0.08402756
+ 0.00754351 0.00517783 0.0039671  0.01541664 0.00349823 0.0025384
+ 0.00278425 0.0027536  0.00338125 0.00536472 0.00524873 0.00403548]
+
+ Statistics:
+[Class
+0    283242
+1       473
+Name: count, dtype: int64, ['training and test data size: ', (212786, 30), (70929, 30)], ['\n training count after SMOTE: ', Class
+0    212427
+1    212427
+Name: count, dtype: int64], ['\n dropped features: ', 'none']]
+
+ Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00     70815
+           1       0.86      0.75      0.80       114
+
+    accuracy                           1.00     70929
+   macro avg       0.93      0.88      0.90     70929
+weighted avg       1.00      1.00      1.00     70929
+
+
+ Confusion Matrix:
+          Predicted 0  Predicted 1
+Actual 0        70801           14
+Actual 1           28           86

@@ -1,0 +1,33 @@
+ Training time:
+500.20624899864197 seconds (8.336770816644032 minutes)
+
+ Accuracy:
+0.9995488637004455
+
+ depth:
+30
+
+ Statistics:
+[Class
+0    283253
+1       473
+Name: count, dtype: int64, ['training and test data size', (212794, 30), (70932, 30)], ['smote training count: ', Class
+0    212433
+1    212433
+Name: count, dtype: int64]]
+
+ Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00     70820
+           1       0.91      0.79      0.85       112
+
+    accuracy                           1.00     70932
+   macro avg       0.95      0.90      0.92     70932
+weighted avg       1.00      1.00      1.00     70932
+
+
+ Confusion Matrix:
+          Predicted 0  Predicted 1
+Actual 0        70811            9
+Actual 1           23           89

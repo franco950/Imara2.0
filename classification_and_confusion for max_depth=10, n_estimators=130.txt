@@ -1,0 +1,17 @@
+Classification Report:
+class_weight=balanced
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00     70820
+           1       0.88      0.79      0.83       112
+
+    accuracy                           1.00     70932
+   macro avg       0.94      0.89      0.91     70932
+weighted avg       1.00      1.00      1.00     70932
+
+
+Confusion Matrix:
+
+          Predicted 0  Predicted 1
+Actual 0        70808           12
+Actual 1           24           88

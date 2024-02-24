@@ -16,10 +16,11 @@ from rest_framework.response import Response
 import re
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
-loaded_model = joblib.load('trained_model.joblib')
+loaded_model = joblib.load('trained_model smote.joblib')
 
 def prediction(data):
     return loaded_model.predict(data)
+
 locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -101,7 +102,7 @@ def alerts(request):
             staff_location = [loc for loc in locations if re.match(f'^{re.escape(area)}', loc)]
             
         else:
-            #for support staff and admin
+            #support staff and admin see alerts from all locations
             staff_location=locations
    
     if request.method == 'POST':
