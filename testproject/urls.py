@@ -17,11 +17,21 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-
+from testapp.views import home,transactions,alerts,reports,system,guidelines,blacklists,logout_view,feedback
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('login.urls')),
-    path('', include('testapp.urls')),
+    path('login', include('login.urls')),
+    path('',home,name='home'),
+    path('transactions',transactions,name='transactions'),
+    path('alerts',alerts,name='alerts'),
+    path('feedback',feedback,name='feedback'),
+    path('reports',reports,name='reports'),
+    path('blacklist',blacklists,name='blacklist'),
+    path('model',system,name='model'),
+    path('guidelines',guidelines,name='guidelines'),
+     path('logout/', logout_view, name='logout'),
+   # path('testapp', include('testapp.urls', namespace='testapp')),
+    
 
 ]

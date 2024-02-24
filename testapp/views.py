@@ -14,8 +14,84 @@ from rest_framework.response import Response
 import re
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
+from rest_framework.test import APIClient
+import requests
+import os
+from datetime import datetime
+from urllib.parse import unquote
 
-loaded_model = joblib.load('trained_model smote.joblib')
+timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+directory_path = 'testapp\joblib models'
+file_names = os.listdir(directory_path)
+print(file_names)
+# Extract timestamps from file names
+timestamps = [datetime.strptime(file_name.split('_')[1], '%Y%m%d%H%M%S') for file_name in file_names]
+
+# Identify the file with the latest timestamp
+latest_file_index = timestamps.index(max(timestamps))
+latest_file = file_names[latest_file_index]
+print(latest_file,0)
+# Access or perform operations with the file having the latest timestamp
+latest_file_path=f'testapp\\joblib models\\{latest_file}'
+def getversion():
+    client=APIClient()
+    url = 'http://127.0.0.1:8001/version'
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        if data.get('version') == latest_file:
+            print('System has the latest model version')
+
+            return JsonResponse({'message': 'System has the latest model version'})
+        else:
+           
+            # Request the joblib file
+            request_joblib_file()
+
+    else:
+        print(f"API call failed with status code: {response.status_code}")
+# Process the data based on a certain value
+def extract_filename(content_disposition):
+    if content_disposition:
+        _, params = content_disposition.split(';', 1)
+        for param in params.split(';'):
+            key, value = param.strip().split('=')
+            if key == 'filename':
+                return unquote(value)
+    return f'downloadedmodel_{timestamp}_.joblib'  # Default name if filename extraction fails      
+
+def request_joblib_file():
+    client=APIClient()
+    joblib_url = 'http://127.0.0.1:8001/download'  # Replace with the actual URL for the joblib file
+    joblib_response = requests.get(joblib_url)
+
+    if joblib_response.status_code == 200:
+        content_disposition = joblib_response.headers.get('Content-Disposition')
+        print(content_disposition)
+        filename = extract_filename(content_disposition)
+         
+        if filename:
+            # Save the joblib file locally or process it as needed
+            with open(f'testapp\\joblib models\\{filename}', 'wb') as f:
+                f.write(joblib_response.content)
+            print("Joblib file downloaded successfully.")
+        else:
+            print("Failed to extract filename from Content-Disposition header.")
+        
+    else:
+        print(f"Failed to download joblib file with status code: {joblib_response.status_code}")
+
+
+# Make the API call
+getversion()
+
+print(latest_file,1)
+print(latest_file_path)
+try:
+    loaded_model = joblib.load(latest_file_path)
+except:
+    Exception("problem........... ")
 
 def prediction(data):
     return loaded_model.predict(data)
@@ -145,7 +221,7 @@ def feedback(request):
         try:
             alertreturn=alert.objects.get(transactionid=identity)
         except:
-            return JsonResponse({'error': 'Transaction id not found'})
+            return JsonResponse({'error': 'Transaction id not found, Check request structure'})
         staff_member=alertreturn.staffid
         alert_id= alertreturn.alertid
         alert_status=alertreturn.alert_status
