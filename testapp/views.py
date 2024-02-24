@@ -1,10 +1,8 @@
 from django.http import HttpResponse 
 from django.shortcuts import render, redirect,get_object_or_404
 from testapp.models import transaction,alert,report,blacklist,systemsettings,CustomUser
-import pandas as pd
 import numpy as np
 import joblib 
-from testapp.predictor import always
 from .forms import SearchForm,SystemSettingsForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -16,12 +14,14 @@ from rest_framework.response import Response
 import re
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
+
 loaded_model = joblib.load('trained_model smote.joblib')
 
 def prediction(data):
     return loaded_model.predict(data)
 
 locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transactions(request):
@@ -32,7 +32,7 @@ def transactions(request):
             # Handle invalid JSON in the request
             return JsonResponse({'error': 'Invalid JSON in the request'}, status=400)
             
-        # Process the data or save it to the database
+        # Process the data and save it to the database
         newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
         newentry.save()
         if data.get('location') not in locations:
@@ -40,22 +40,16 @@ def transactions(request):
             newentry.save()
             return JsonResponse({"error":"invalid transaction location"})
 
-
-        transaction_list=[]
-        neww=newentry.transaction_data    
-        neww=neww.split(',')
-        for num in neww:
-            transaction_list.append(float(num)) 
-
+        transaction_list= list(map(float, newentry.transaction_data.split(',')))
         input_data = np.array(transaction_list)
         reshaped_data = input_data.reshape(1, -1)
                 
         try:
             done=prediction(reshaped_data)
-        except:
+        except Exception as e:
             newentry.transaction_state='invalid data'
             newentry.save()
-            return JsonResponse({"error":"invalid transaction data"})
+            return JsonResponse({"error":f"invalid transaction data {str(e)}"})
         
         newid=newentry.transactionid
         if done==0:
@@ -67,9 +61,7 @@ def transactions(request):
             pred='fraud'
             transactlocation=newentry.location
             userd=CustomUser.objects.get(location=transactlocation, department='agent')
-            
             mystaffid = userd.staffid
-            
             new_entry = alert.objects.create( transactionid=newentry.transactionid,
                                                 staffid=mystaffid, alert_status='waiting')
             new_entry.save()
