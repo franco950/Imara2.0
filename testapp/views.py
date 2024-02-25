@@ -84,7 +84,10 @@ def request_joblib_file():
 
 
 # Make the API call
-getversion()
+try:
+    getversion()
+except Exception:
+    ("error problem accessing the machine learning system")
 
 print(latest_file,1)
 print(latest_file_path)
@@ -97,7 +100,7 @@ def prediction(data):
     return loaded_model.predict(data)
 
 locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
-
+regions=['Kiambu','Thika','Online']
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transactions(request):
@@ -154,9 +157,64 @@ def home(request):
     name=user.username
     if user.is_authenticated:
         content={'set':name}
+    else:
+        content={'set':'guest'}
+    if request.method == 'POST':
+        datas = json.loads(request.body)
+        start = datas.get('start_date')
+        end = datas.get('end_date')
+        reg=datas.get('location')
+        loc=datas.get('station')
+        spec=datas.get('specify')
+        status=datas.get('status')
+
+        all_transactions=transaction.objects.all().count()
+        all_alerts=alert.objects.all().count()
+        rejected=alert.objects.filter(alert_status='rejected').count()
+        approved=alert.objects.filter(alert_status='approved').count()
+        try:
+            approval_rate=(approved/all_alerts)*100
+        except:
+            pass
+        waiting=alert.objects.filter(alert_status='waiting').count()
+        all_reports=report.objects.all().count()
+        false_positives=report.objects.filter(report_status='false positive').count()
+        false_negatives=report.objects.filter(report_status='false negative').count()
+
+    
+        def get_region(reg,start,end,status):
+            areas = [loc for loc in locations if re.match(f'^{re.escape(reg)}', loc)]
+            transactions = transaction.objects.filter(location__in=areas).values_list('transactionid',flat=True)
+            get_alert=alert.objects.filter(alert_status=[stat for stat in status if status],timestamp__range=[start, end ],transactionid__in=transactions).count()
+            return get_alert
+        
+        def get_station(loc,start,end,status):
+            transactions = transaction.objects.filter(location__in=loc).values_list('transactionid',flat=True)
+            get_alert=alert.objects.filter(alert_status=[stat for stat in status if status],timestamp__range=[start, end],transactionid__in=transactions).count()
+            return get_alert
+        
+        def get_map(spec,data):
+            result={}
+            if spec=='location':
+                data=reg
+                for all in data:
+                    result[all]=get_region()#reg,start,end,[stat for stat in status if status])
+            elif spec=='station':
+                data=loc
+                for all in data:
+                    result[all]=get_station()#loc,start,end,[stat for stat in status if status])
+            return result
+        
+        general_stats={'all_transactions':all_transactions,'all_alerts':all_alerts,'approved':approved,
+            'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
+            'false_positives':false_positives,'false_negatives':false_negatives}
+        
+        filter_stats={'map':get_map(),'region':get_region(),'station':get_station()}
+    try:
+        return render(request, 'homepage.html',content,general_stats,filter_stats)
+    except:
         return render(request, 'homepage.html',content)
-    else: 
-        return render(request, 'homepage.html')
+    
   
 @login_required
 def alerts(request):

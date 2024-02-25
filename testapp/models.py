@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from django.utils import timezone  
 class CustomUser(AbstractUser):
     staffid = models.CharField(max_length=10, blank=True, null=True)
     department=models.CharField(max_length=30)
@@ -15,6 +15,7 @@ class transaction(models.Model):
     location=models.CharField(max_length=30)
     transaction_data=models.CharField(max_length=3000)
     transaction_state=models.CharField(max_length=11, default='incoming')
+    timestamp = models.DateTimeField(auto_now_add=True)
   
     def __str__(self):
         return f"{str(self.transactionid)} : {self.location} : {self.transaction_state}"
@@ -24,6 +25,7 @@ class alert(models.Model):
     transactionid=models.CharField(max_length=20)
     staffid=models.CharField(max_length=30)
     alert_status=models.CharField(max_length=30)
+    timestamp = models.DateTimeField(auto_now_add=True)
   
     def __str__(self):
         return f"alert id:{str(self.alertid)}  ; transaction id:  {self.transactionid} ; staff id: {self.staffid} ; alert status: {self.alert_status}"
@@ -34,6 +36,7 @@ class report(models.Model):
     staffid=models.CharField(max_length=40)
     report_status=models.CharField(max_length=30)
     verification=models.CharField(max_length=30 )
+    timestamp = models.DateTimeField(auto_now_add=True)
   
     def __str__(self):
         return f"report id:{str(self.reportid)}  ; transaction id: {self.transactionid} ; staff id: {self.staffid} ; report status: {self.report_status}"
