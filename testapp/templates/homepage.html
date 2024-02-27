@@ -1,2 +1,67 @@
-<body>{% include 'header.html' %}<p>Hello, {{set}}</p><p>welcome to Imara.</p></body>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <!-- <link rel="stylesheet" href="/node_modules/chart.js/dist/Chart.min.css">
+  -->
+  <title>Your Dashboard</title>
+</head>
 
+<body>
+  {% include 'header.html' %}<p>Hello, {{content.set}}</p><p>welcome to Imara.</p>{{general_stats}}
+  
+    <p><form id="dataCollectionForm">
+  {% csrf_token %}
+  <div id="pieChart"></div>
+  
+  <label for="start_date">Start Date:</label>
+  <input type="date" id="start_date" name="start_date" value="2024-01-01">
+
+  <br>
+
+  <label for="end_date">End Date:</label>
+  <input type="date" id="end_date" name="end_date" value="2024-12-31">
+
+  <br>
+
+  <label for="location">Location:</label>
+  <input type="text" id="location" name="location" value="regions">
+
+  <br>
+
+  <label for="station">Station:</label>
+  <input type="text" id="station" name="station" value="locations">
+
+  <br>
+
+  <label for="specify">Specify:</label>
+  <input type="text" id="specify" name="specify" value="locations">
+
+  <br>
+
+  <label for="status">Status:</label>
+  <select id="status" name="status">
+    <option value="approved" selected>Approved</option>
+    <option value="rejected">Rejected</option>
+    <option value="waiting">Waiting</option>
+  </select>
+
+  <br>
+  <!-- <script>
+  var generalStats = {{ general_stats}}
+  </script> -->
+  <!-- Submit Button -->
+  <button type="button" onclick="">Submit</button>
+</form></p>
+<!-- Add this inside the body of your HTML file where you want the pie chart -->
+<div>
+  <canvas id="pieChart" width="400" height="400"></canvas>
+</div>
+<!--<script type="module" src="{% static '/chart.js' %}" %></script>-->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
+<script src="{% static '/homepage.js' %}"></script>
+</body>
+</html>

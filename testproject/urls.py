@@ -16,8 +16,9 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include,re_path
 from testapp.views import home,transactions,alerts,reports,system,guidelines,blacklists,logout_view,feedback
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,7 +31,8 @@ urlpatterns = [
     path('blacklist',blacklists,name='blacklist'),
     path('model',system,name='model'),
     path('guidelines',guidelines,name='guidelines'),
-     path('logout/', logout_view, name='logout'),
+    path('logout/', logout_view, name='logout'),
+    #re_path(r'^.*', TemplateView.as_view(template_name='dashboard/build/index.html')),
    # path('testapp', include('testapp.urls', namespace='testapp')),
     
 

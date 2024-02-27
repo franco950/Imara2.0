@@ -3,12 +3,12 @@ from django.shortcuts import render, redirect,get_object_or_404
 from testapp.models import transaction,alert,report,blacklist,systemsettings,CustomUser
 import numpy as np
 import joblib 
-from .forms import SearchForm,SystemSettingsForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
 from rest_framework.decorators import api_view
+from django.views.decorators.http import require_POST
 from rest_framework import status,generics
 from rest_framework.response import Response
 import re
@@ -23,14 +23,13 @@ from urllib.parse import unquote
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 directory_path = 'testapp\joblib models'
 file_names = os.listdir(directory_path)
-print(file_names)
+
 # Extract timestamps from file names
 timestamps = [datetime.strptime(file_name.split('_')[1], '%Y%m%d%H%M%S') for file_name in file_names]
 
 # Identify the file with the latest timestamp
 latest_file_index = timestamps.index(max(timestamps))
 latest_file = file_names[latest_file_index]
-print(latest_file,0)
 # Access or perform operations with the file having the latest timestamp
 latest_file_path=f'testapp\\joblib models\\{latest_file}'
 def getversion():
@@ -89,8 +88,6 @@ try:
 except Exception:
     ("error problem accessing the machine learning system")
 
-print(latest_file,1)
-print(latest_file_path)
 try:
     loaded_model = joblib.load(latest_file_path)
 except:
@@ -151,7 +148,8 @@ def transactions(request):
         return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
                             'prediction':str(pred),'mode':'manual'})
         
-        
+
+      
 def home(request):
     user = request.user
     name=user.username
@@ -159,61 +157,84 @@ def home(request):
         content={'set':name}
     else:
         content={'set':'guest'}
+    all_transactions=transaction.objects.all().count()
+    all_alerts=alert.objects.all().count()
+    rejected=alert.objects.filter(alert_status='rejected').count()
+    approved=alert.objects.filter(alert_status='approved').count()
+    print(approved)
+    try:
+        approval_rate=(approved/all_alerts)*100
+        print(approval_rate)
+    except:
+        pass
+    waiting=alert.objects.filter(alert_status='waiting').count()
+    all_reports=report.objects.all().count()
+    false_positives=report.objects.filter(report_status='false positive').count()
+    false_negatives=report.objects.filter(report_status='false negative').count()
+    general_stats={'all_transactions':all_transactions,'all_alerts':all_alerts,'approved':approved,
+        'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
+        'false_positives':false_positives,'false_negatives':false_negatives}
     if request.method == 'POST':
-        datas = json.loads(request.body)
-        start = datas.get('start_date')
-        end = datas.get('end_date')
-        reg=datas.get('location')
-        loc=datas.get('station')
-        spec=datas.get('specify')
-        status=datas.get('status')
-
-        all_transactions=transaction.objects.all().count()
-        all_alerts=alert.objects.all().count()
-        rejected=alert.objects.filter(alert_status='rejected').count()
-        approved=alert.objects.filter(alert_status='approved').count()
-        try:
-            approval_rate=(approved/all_alerts)*100
-        except:
-            pass
-        waiting=alert.objects.filter(alert_status='waiting').count()
-        all_reports=report.objects.all().count()
-        false_positives=report.objects.filter(report_status='false positive').count()
-        false_negatives=report.objects.filter(report_status='false negative').count()
-
+        print('yaaaaaay')
+        start = request.POST.get('start_date')
+        end = request.POST.get('end_date')
+        region=request.POST.get('location')
+        location=request.POST.get('station')
+        specify=request.POST.get('specify')
+        status=request.POST.get('status')
+       
     
-        def get_region(reg,start,end,status):
-            areas = [loc for loc in locations if re.match(f'^{re.escape(reg)}', loc)]
+        def get_region(region,start,end,status):
+            start=request.POST.get('start_date')
+            end = request.POST.get('end_date')
+            region=request.POST.get('location')
+            loca=request.POST.get('station')
+            specify=request.POST.get('specify')
+            status=request.POST.get('status')
+            
+            areas = [loc for loc in locations if re.match(f'^{re.escape(region)}', loc)]
             transactions = transaction.objects.filter(location__in=areas).values_list('transactionid',flat=True)
             get_alert=alert.objects.filter(alert_status=[stat for stat in status if status],timestamp__range=[start, end ],transactionid__in=transactions).count()
+            print(get_alert)
             return get_alert
         
-        def get_station(loc,start,end,status):
-            transactions = transaction.objects.filter(location__in=loc).values_list('transactionid',flat=True)
+        def get_station(loca,start,end,status):
+            start=request.POST.get('start_date')
+            end = request.POST.get('end_date')
+            region=request.POST.get('location')
+            loca=request.POST.get('station')
+            specify=request.POST.get('specify')
+            status=request.POST.get('status')
+            transactions = transaction.objects.filter(location__in=loca).values_list('transactionid',flat=True)
             get_alert=alert.objects.filter(alert_status=[stat for stat in status if status],timestamp__range=[start, end],transactionid__in=transactions).count()
             return get_alert
         
-        def get_map(spec,data):
+        def get_map(specify,data):
             result={}
-            if spec=='location':
-                data=reg
+            if specify=='location':
+                data=region
                 for all in data:
-                    result[all]=get_region()#reg,start,end,[stat for stat in status if status])
-            elif spec=='station':
-                data=loc
+                    result[all]=get_region()
+            elif specify=='station':
+                data=location
                 for all in data:
-                    result[all]=get_station()#loc,start,end,[stat for stat in status if status])
+                    result[all]=get_station()
             return result
+        return HttpResponse('YAAAAY')
+      #  filter_stats={'map':get_map(),'region':get_region(),'station':get_station()}
         
-        general_stats={'all_transactions':all_transactions,'all_alerts':all_alerts,'approved':approved,
-            'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
-            'false_positives':false_positives,'false_negatives':false_negatives}
-        
-        filter_stats={'map':get_map(),'region':get_region(),'station':get_station()}
-    try:
-        return render(request, 'homepage.html',content,general_stats,filter_stats)
-    except:
-        return render(request, 'homepage.html',content)
+    
+    
+     
+   
+    # try:
+    #     context={'content':content,'general_stats':general_stats,'filter_stats':filter_stats}
+    #     return render(request, 'homepage.html',context)
+    #except:
+    else:
+        print(general_stats)
+        context={'content':content,'general_stats':general_stats}
+        return render(request, 'homepage.html',context)
     
   
 @login_required
@@ -346,33 +367,48 @@ def blacklists(request):
 
 @login_required
 def system(request):
-    settings,created=systemsettings.objects.get_or_create(settings_class='general')
-    form=SystemSettingsForm()
-   
+    settings = None
+    
     if request.method == 'POST':
+        name = request.POST.get('name')
         
-        form = SystemSettingsForm(request.POST)
-        if form.is_valid():
-            form.save()
-            # settings.automate = form.cleaned_data.get('automate')
-            # settings.locations = form.cleaned_data.get('locations')
-            # settings.blacklist_add = form.cleaned_data.get('blacklist_add')
-            # settings.report_add = form.cleaned_data.get('report_add')
-            # settings.enforce_blacklist = form.cleaned_data.get('enforce_blacklist')
-            # settings.save()
+        if name == 'settings class':
+            settings_class = request.POST.get('settings_class')
             
-            #return redirect(system)
-    # else:
-    #     form = SystemSettingsForm(
-    #         initial={
-    #         'automate': settings.automate,
-    #         'locations': settings.locations,
-    #         'blacklist_add': settings.blacklist_add,
-    #         'report_add': settings.report_add,
-    #         'enforce_blacklist': settings.enforce_blacklist}
-    #     )
-    context={'form':form}
-    return render(request,'modelpage.html',context) 
+            if settings_class == 'general':
+                settings, created = systemsettings.objects.get_or_create(settings_class='general')
+            else:
+                settings, created = systemsettings.objects.get_or_create(settings_class='specific')
+
+        else:
+            # Retrieve the existing settings or create a new instance if it doesn't exist
+            settings, created = systemsettings.objects.get_or_create(settings_class='general')
+
+            if name == 'location':
+                locations = request.POST.get('location')
+                settings.locations = locations
+            elif name == 'station':
+                stations = request.POST.getlist('station')  # Get a list of selected stations
+                settings.stations = ",".join(stations)
+            elif name == 'automate':
+                automate = request.POST.get('automate')
+                settings.automate = automate
+            elif name == 'enforce':
+                enforce = request.POST.get('enforce')
+                settings.enforce_blacklist = True if enforce == 'enforce' else False
+            elif name == 'blacklist_add':
+                blacklist_add = request.POST.getlist('blacklist_add')  # Get a list of selected items
+                settings.blacklist_add = ",".join(blacklist_add)
+            elif name == 'report_add':
+                report_add = request.POST.get('reports')
+                settings.report_add = report_add
+
+            # Save the instance after making changes
+            settings.save()
+
+    return render(request, 'modelpage.html')
+
+   
 
 @login_required
 def guidelines(request):

@@ -50,31 +50,13 @@ class blacklist(models.Model):
         return f"blacklist id:{str(self.blacklistid)}  ;  transaction id: {self.transactionid} ; category: {self.category }"
 
 class systemsettings(models.Model):
-    AUTOMATION = [
-        ('all', 'Automate All Transactions'),
-        ('location', 'automate by location'),
-        ('off', 'no automation')
-    ]
-    LOCATIONS=[('none','none'),
-               ('Kiambu01','Kiambu01'),
-               ('Kiambu0','Kiambu02'),
-               ('Thika01','Thika01'),
-               ('Thika02','Thika02'),
-               ('Online','Online')]
-    BLACKLIST=[
-               ('rejected alerts', 'add rejected alerts to the blacklist automatically'),
-               ('false negatives','add false negatives to the blacklist automatically')]
-    REPORT=[('auto', 'automatically generate reports from allowed transactions'),
-            ('redirect','redirect the user to manually create a report after allowing a flagged transaction'),
-            ('none', 'do not redirect the user or generate a report automatically')]
-
-
     settings_class=models.CharField( max_length=20, default='general')
-    locations=models.CharField(choices=LOCATIONS, max_length=50, default='all')
-    automate=models.CharField(choices=AUTOMATION, max_length=100, default='none')
+    locations=models.CharField( max_length=50, default='none')
+    stations=models.CharField( max_length=50, default='none')
+    automate=models.CharField( max_length=100, default='none')
     enforce_blacklist=models.BooleanField(default=False)
-    blacklist_add=models.CharField(choices=BLACKLIST, max_length=100,default='rejected alerts')
-    report_add=models.CharField(choices=REPORT, max_length=100, default='auto')
+    blacklist_add=models.CharField( max_length=100,default='none')
+    report_add=models.CharField( max_length=100, default='none')
 
     def __str__(self):
-        return f"{str(self.settings_class)}  : {self.automate} : {self.locations} :  {self.enforce_blacklist} : {self.blacklist_add} : {self.report_add}"
+        return f"{str(self.settings_class)}  : {self.automate} : {self.locations} : {self.stations} :  {self.enforce_blacklist} : {self.blacklist_add} : {self.report_add}"
