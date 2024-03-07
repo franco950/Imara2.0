@@ -83,3 +83,40 @@
     padding: 16px; /* Adjust padding based on your design */
     margin:0;
 }
+/* Style for dropdown containers */
+#time-view-dropdown {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}
+#custom-time-dropdown {
+    
+    padding:10px;
+    border :10px;
+    margin: 10px;  /* Adjust margin as needed for spacing */
+}
+#station-dropdown {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}
+#location-dropdown {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}
+
+/* Style for buttons */
+#showTimeViewBtn {
+    display: inline-block;
+    margin: 10px; /* Adjust margin as needed for spacing */
+}
+#showCustomTimeBtn {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}
+#showStationsBtn {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}
+#showLocationsBtn {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}

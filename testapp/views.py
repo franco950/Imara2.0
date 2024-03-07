@@ -17,7 +17,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.test import APIClient
 import requests
 import os
-from datetime import datetime
+from datetime import datetime,timedelta
 from urllib.parse import unquote
 from django.db.models import Count, F, ExpressionWrapper, DateTimeField
 from django.db.models.functions import Extract
@@ -132,14 +132,36 @@ for alll in tra:
             alll.save()
         except:
             pass
-        
-        
-locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
-regions=['Kiambu','Thika','Online']
+
+all_stations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
+all_locations=['Kiambu','Thika','Online']  
+
+def locator(request):
+    try:
+        user = request.user
+
+        if user.is_authenticated:
+            if user.department == 'agent' or user.department == 'manager':
+                staff_station = user.location
+                staff_locations = [loc for loc in all_locations if re.match(f'^{re.escape(staff_station)}', loc)]
+            elif user.department in ['support staff', 'admin']:
+                # Support staff and admin see alerts from all locations
+                staff_location = all_locations
+                staff_station = all_stations
+
+            content = {'staff_locations': staff_location, 'staff_stations': staff_station}
+            return content
+    except Exception as e:
+        return HttpResponse(f'Error: {e}')
+
+    return HttpResponse('User not logged in')     
+
+
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transactions(request):
-    
+       
     if request.method=='POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
@@ -150,7 +172,7 @@ def transactions(request):
         # Process the data and save it to the database
         newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
         newentry.save()
-        if data.get('location') not in locations:
+        if data.get('location') not in all_locations:
             newentry.transaction_state='invalid location'
             newentry.save()
             return JsonResponse({"error":"invalid transaction location"})
@@ -197,103 +219,65 @@ def home(request):
         content={'set':name}
     else:
         content={'set':'guest'}
-    all_transactions=transaction.objects.all().count()
-    predicted=transaction.objects.filter(transaction_state='predicted').count()
+    filter_stations=[loc for loc in locator(request).get('staff_stations')]
+    filter_locations=[loc for loc in locator(request).get('staff_locations')]
+    
+    current_date = datetime.now()
+    # Calculate the date 5 years ago
+    five_years_ago = current_date - timedelta(days=365 * 5)
+    custom_start_date = five_years_ago
+    custom_end_date=current_date
+
+    if request.method == 'POST':
+        print('yaaaaaay')
+        custom_start_date = request.POST.get('custom_start_date', '')
+        custom_end_date = request.POST.get('custom_end_date', '')
+        custom_time_option = request.POST.get('customTimeOptions', '')
+        filter_stations = request.POST.getlist('stations')
+        filter_locations = request.POST.getlist('locations')
+    filter_transactions = transaction.objects.filter(location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')]).values_list('transactionid',flat=True)
+            
+    all_transactions=transaction.objects.filter(timestamp__range=[custom_start_date, custom_end_date ],location__in=locator(request).get('staff_stations')).count()
+    predicted=transaction.objects.filter(transaction_state='predicted',timestamp__range=[custom_start_date, custom_end_date ],location__in=locator(request).get('staff_stations')).count()
     pending=all_transactions-predicted
-    all_alerts=alert.objects.all().count()
-    rejected=alert.objects.filter(alert_status='rejected').count()
-    approved=alert.objects.filter(alert_status='approved').count()
-    data = transaction.objects.annotate(hour=Extract('timestamp','hour')).values('hour').annotate(count=Count('transactionid')).order_by('hour')
+    all_alerts=alert.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+    rejected=alert.objects.filter(alert_status='rejected',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+    approved=alert.objects.filter(alert_status='approved',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+    
+    data = transaction.objects.filter(timestamp__range=[custom_start_date, custom_end_date ]).annotate(hour=Extract('timestamp','hour')).values('hour').annotate(count=Count('transactionid')).order_by('hour')
    
     try:
         approval_rate=int((approved/(approved+rejected))*100)
         
     except:
         pass
-    waiting=alert.objects.filter(alert_status='waiting').count()
-    all_reports=report.objects.all().count()
-    false_positives=report.objects.filter(report_status='false positive').count()
-    false_negatives=report.objects.filter(report_status='false negative').count()
+    waiting=alert.objects.filter(alert_status='waiting',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+    all_reports=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+    false_positives=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions,report_status='false positive').count()
+    false_negatives=report.objects.filter(report_status='false negative',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
     general_stats={'all_transactions':all_transactions,'transactions_per_hour':list(data),'predicted_transactions':predicted,'pending_transactions':pending,'all_alerts':all_alerts,'approved':approved,
         'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
-        'false_positives':false_positives,'false_negatives':false_negatives}
-    if request.method == 'POST':
-        print('yaaaaaay')
-        start = request.POST.get('start_date')
-        end = request.POST.get('end_date')
-        region=request.POST.get('location')
-        location=request.POST.get('station')
-        specify=request.POST.get('specify')
-        status=request.POST.get('status')
-       
+        'false_positives':false_positives,'false_negatives':false_negatives,'locations':locator(request).get('staff_locations'),'stations':locator(request).get('staff_stations')}
     
-        def get_region(region,start,end,status):
-            start=request.POST.get('start_date')
-            end = request.POST.get('end_date')
-            region=request.POST.get('location')
-            loca=request.POST.get('station')
-            specify=request.POST.get('specify')
-            status=request.POST.get('status')
-            
-            areas = [loc for loc in locations if re.match(f'^{re.escape(region)}', loc)]
-            transactions = transaction.objects.filter(location__in=areas).values_list('transactionid',flat=True)
-            get_alert=alert.objects.filter(alert_status=[stat for stat in status if status],timestamp__range=[start, end ],transactionid__in=transactions).count()
-            
-            return get_alert
-        
-        def get_station(loca,start,end,status):
-            start=request.POST.get('start_date')
-            end = request.POST.get('end_date')
-            region=request.POST.get('location')
-            loca=request.POST.get('station')
-            specify=request.POST.get('specify')
-            status=request.POST.get('status')
-            transactions = transaction.objects.filter(location__in=loca).values_list('transactionid',flat=True)
-            get_alert=alert.objects.filter(alert_status=[stat for stat in status if status],timestamp__range=[start, end],transactionid__in=transactions).count()
-            return get_alert
-        
-        def get_map(specify,data):
-            result={}
-            if specify=='location':
-                data=region
-                for all in data:
-                    result[all]=get_region()
-            elif specify=='station':
-                data=location
-                for all in data:
-                    result[all]=get_station()
-            return result
-        return HttpResponse('YAAAAY')
-      #  filter_stats={'map':get_map(),'region':get_region(),'station':get_station()}
-        
-    
-    
-     
-   
-    # try:
-    #     context={'content':content,'general_stats':general_stats,'filter_stats':filter_stats}
-    #     return render(request, 'homepage.html',context)
-    #except:
-    else:
-        
-        context={'content':content,'general_stats':general_stats}
-        return render(request, 'homepage.html',context)
-    
+
+    context={'content':content,'general_stats':general_stats}
+    return render(request, 'homepage.html',context)
+
   
 @login_required
 def alerts(request):
     
-    user = request.user
-    if user.is_authenticated:
-        if user.department=='agent':
-            staff_location = user.location
-        elif user.department=='manager':
-            area=user.location
-            staff_location = [loc for loc in locations if re.match(f'^{re.escape(area)}', loc)]
+    staff_location=locator(request).get('staff_stations')
+    # if user.is_authenticated:
+    #     if user.department=='agent':
+    #         staff_location = user.location
+    #     elif user.department=='manager':
+    #         area=user.location
+    #         staff_location = [loc for loc in locations if re.match(f'^{re.escape(area)}', loc)]
             
-        else:
-            #support staff and admin see alerts from all locations
-            staff_location=locations
+    #     else:
+    #         #support staff and admin see alerts from all locations
+    #         staff_location=locations
    
     if request.method == 'POST':
 

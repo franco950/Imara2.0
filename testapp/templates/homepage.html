@@ -1,47 +1,81 @@
-{% extends 'header.html' %}{% block content %}{% load static %}
+{% extends 'header.html' %}
+{% block content %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel="stylesheet" href="{% static 'homepage.css' %}"></head>
+    <link rel="stylesheet" href="{% static 'homepage.css' %}">
+</head>
 
-<body >
-  <div id="main" >
-  <p>Hello, {{content.set}}</p><p>welcome to Imara.</p>
+<body>
+    <div id="main">
+        <p>Hello, {{content.set}}</p>
+        <p>Welcome to Imara.</p>
 
-  
-  <p><form id="dataCollectionForm">
-  {% csrf_token %}
-  
-  <label for="start_date">Start Date:</label>
-  <input type="date" id="start_date" name="start_date" value="2024-01-01">
+        <form id="dataCollectionForm"onsubmit="submitForm(event)">
+            {% csrf_token %}
 
- 
 
-  <label for="end_date">End Date:</label>
-  <input type="date" id="end_date" name="end_date" value="2024-12-31">
+            <div>
+                <button id="showCustomTimeBtn" type="button">Time View</button><br>
+                <div id="custom-time-dropdown" style="display: none;">
+                    <label for="custom_start_date">Start Date:</label>
+                    <input type="date" id="custom_start_date" name="custom_start_date" value="2020-01-01">
 
-  <label for="location">Location:</label>
-  <input type="text" id="location" name="location" value="regions">
-  <label for="station">Station:</label>
-  <input type="text" id="station" name="station" value="locations">
-  <label for="specify">Specify:</label>
-  <input type="text" id="specify" name="specify" value="locations">
-  <label for="status">Status:</label>
-  <select id="status" name="status">
-    <option value="approved" selected>Approved</option>
-    <option value="rejected">Rejected</option>
-    <option value="waiting">Waiting</option>
-  </select>
+                    <label for="custom_end_date">End Date:</label>
+                    <input type="date" id="custom_end_date" name="custom_end_date" value="2034-12-31">
+
+                    <!-- Your time view options dropdown for custom time -->
+                    <label for="customTimeOptions">Custom Time View:</label>
+                    <select id="customTimeOptions" name="customTimeOptions">
+                        <option value="lastDay">Last Day</option>
+                        <option value="lastWeek">Last Week</option>
+                        <option value="lastMonth">Last Month</option>
+                        <option value="lastThreeMonths">Last Three Months</option>
+                        <option value="lastSixMonths">Last Six Months</option>
+                        <option value="lastYear">Last Year</option>
+                        <option value="allTime"  selected>All Time</option> 
+                    </select>
+
+                    <!-- Submit button for custom time selection -->
+                    <button id="customTimeSubmitBtn" type="button">Apply</button>
+                </div>
+            </div>
+
+            <!-- For Stations -->
+            <button id="showStationsBtn" type="button">Stations view</button>
+            <div id="station-dropdown" style="display: none;">
+                {% for item in general_stats.stations %}
+                    <label>
+                        <input type="checkbox" name="stations" value="{{ item }}"> {{ item }}<br>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <!-- For Locations -->
+            <!-- <button id="showLocationsBtn" type="button">Locations view</button>
+            <div id="location-dropdown" style="display: none;">
+                {% for item in general_stats.locations %}
+                    <label>
+                        <input type="checkbox" name="locations" value="{{ item }}"> {{ item }}<br>
+                    </label>
+                {% endfor %}
+            </div> -->
+
+            <button type="submit" >Submit</button>
+        </form>
+    </div>
+
+   
   <br>
 <script>
     // Pass the general_stats dictionary to JavaScript
     var generalStats = {{ general_stats|safe }};
 </script>
-  <button type="button" onclick="">Submit</button>
-</form></p>
+ 
 
 
 <div class="card cards1" style="background-color: #3498db;">

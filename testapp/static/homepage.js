@@ -1,9 +1,83 @@
+document.addEventListener('DOMContentLoaded', function () {
+  var stationDropdown = document.getElementById('station-dropdown');
+  var showStationsBtn = document.getElementById('showStationsBtn');
 
-// var generalStats={'all_transactions': 26, 'transactions_per_hour': [{'hour': 6, 'count': 3}, {'hour': 8, 'count': 2}, {'hour': 9, 'count': 1}, {'hour': 17, 'count': 20}], 'predicted_transactions': 25,
-//  'pending_transactions': 1, 'all_alerts': 25, 'approved': 14, 'rejected': 11, 'approval_rate': 56,
-//   'waiting': 0, 'all_reports': 1, 'false_positives': 1, 'false_negatives': 0}
-// console.log(generalStats)
+  showStationsBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      stationDropdown.style.display = (stationDropdown.style.display === 'none') ? 'block' : 'none';
+  });
 
+  var locationDropdown = document.getElementById('location-dropdown');
+  var showLocationsBtn = document.getElementById('showLocationsBtn');
+
+  showLocationsBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      locationDropdown.style.display = (locationDropdown.style.display === 'none') ? 'block' : 'none';
+  });
+
+  var customTimeDropdown = document.getElementById('custom-time-dropdown');
+  var showCustomTimeBtn = document.getElementById('showCustomTimeBtn');
+  var customStartDate = document.getElementById('custom_start_date');
+  var customEndDate = document.getElementById('custom_end_date');
+
+  showCustomTimeBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      customTimeDropdown.style.display = (customTimeDropdown.style.display === 'none') ? 'block' : 'none';
+  });
+
+  var customTimeSubmitBtn = document.getElementById('customTimeSubmitBtn');
+  var customTimeOptions = document.getElementById('customTimeOptions');
+
+  customTimeSubmitBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+
+      // Commenting the line below will keep the dropdown visible
+      // customTimeDropdown.style.display = 'none';
+
+      var currentDate = new Date();
+      var selectedOption = customTimeOptions.value;
+
+      switch (selectedOption) {
+          case 'lastDay':
+              adjustDates(new Date(currentDate.setDate(currentDate.getDate() - 1)));
+              break;
+          case 'lastWeek':
+              adjustDates(new Date(currentDate.setDate(currentDate.getDate() - 7)));
+              break;
+          case 'lastMonth':
+              adjustDates(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
+              break;
+          case 'lastThreeMonths':
+              adjustDates(new Date(currentDate.setMonth(currentDate.getMonth() - 3)));
+              break;
+          case 'lastSixMonths':
+              adjustDates(new Date(currentDate.setMonth(currentDate.getMonth() - 6)));
+              break;
+          case 'lastYear':
+              adjustDates(new Date(currentDate.setFullYear(currentDate.getFullYear() - 1)));
+              break;
+          case 'allTime':
+              adjustDates(new Date(currentDate.setFullYear(currentDate.getFullYear() - 5)));
+              break;
+          default:
+              break;
+      }
+  });
+
+  function adjustDates(newDate) {
+      customStartDate.valueAsDate = newDate;
+      customEndDate.valueAsDate = new Date(); // Set end date to today
+  }
+
+});
+function submitForm(event) {
+  event.preventDefault(); // Prevent the default form submission behavior
+
+  // Perform any additional actions or data processing here if needed
+
+  // Reload the page
+  location.reload();
+} 
 var pieData = [
   { label: 'False Positives', value: generalStats.false_positives },
   { label: 'False Negatives', value: generalStats.false_negatives }
@@ -158,20 +232,6 @@ barChartSvg.append('g')
 barChartSvg.append('g')
   .call(d3.axisLeft(y));
 
-// // Add x-axis label
-// barChartSvg.append("text")
-//   .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
-//   .style("text-anchor", "middle")
-//   .text("Hour");
-
-// // Add y-axis label
-// barChartSvg.append("text")
-//   .attr("transform", "rotate(-90)")
-//   .attr("y", 0 - margin.left)
-//   .attr("x", 0 - (height / 2))
-//   .attr("dy", "1em")
-//   .style("text-anchor", "middle")
-//   .text("Count");
 barChartSvg.selectAll("text.bar-label")
   .data(generalStats.transactions_per_hour)
   .enter()
