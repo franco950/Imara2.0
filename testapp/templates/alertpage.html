@@ -1,9 +1,9 @@
-{% load static %}
+{% extends 'header.html' %}{% load static %}
 <link rel="stylesheet" href="{% static 'alerts.css' %}" >
 
 
-<body>
-  {% include 'header.html' %}
+<body>{% block content %}
+
   
   <p>pending alerts: </p>
 <ul> {% for items in set %}
@@ -15,6 +15,6 @@
   </li>
 {% endfor %}</ul>
 
-
+{% endblock %}
 </body>
 </html>

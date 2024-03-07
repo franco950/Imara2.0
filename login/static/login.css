@@ -20,6 +20,7 @@ img{
     box-shadow: 1px 4px 22px -8px #0004;
     display: flex;
     overflow: hidden;
+    font-family: 'Arial', sans-serif;
 }
 .login_box .left{
   width: 41%;

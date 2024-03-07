@@ -15,7 +15,7 @@ class transaction(models.Model):
     location=models.CharField(max_length=30)
     transaction_data=models.CharField(max_length=3000)
     transaction_state=models.CharField(max_length=11, default='incoming')
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now() + timezone.timedelta(hours=3))
   
     def __str__(self):
         return f"{str(self.transactionid)} : {self.location} : {self.transaction_state}"

@@ -1,20 +1,33 @@
-<!DOCTYPE html>
-<html>
+{% load static %}<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Imara</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    
+    <link rel="stylesheet" href="{% static 'header.css' %}">
+    <title>Imara</title>
 </head>
 <body>
-    
+
+    <div id="topBar"><div id="logo" > <img src="{% static 'imarasmall.png' %}"width='250px' height="80px" alt="logo"></div>
+        <!-- Add content for the top bar -->
+        <p>Welcome to Imara!</p>
+    </div>
+
+    <div id="sideMenu">
+        <ul>
+            <li><a href="{% url 'home' %}">dashboard</a></li>
+            <li><a href="{% url 'alerts' %}">alerts</a></li>
+            <li><a href="{% url 'reports' %}">reports</a></li>
+            <li><a href="{% url 'model' %}">model</a></li>
+            <li><a href="{% url 'guidelines' %}">guidelines</a></li>
+            <li><a href="{% url 'admin:index' %}">admin</a></li>
+        </ul>
+    </div>
+
+    <div id="content">
+        <!-- Page content goes here -->
+        {% block content %}{% endblock %}
+    </div>
 </body>
-
-<p><a href= "{% url 'home' %}">dashboard </a> 
-    <a href= "{% url 'alerts' %}">alerts  </a> 
-     <a href= "{% url 'reports' %}">reports </a>  
-     <a href= "{% url 'model' %}">model </a>  
-     <a href= "{% url 'guidelines' %}">guidelines </a>
-     <a href= "{% url 'admin:index' %}">admin</a></p><a href="{% url 'logout' %}">Logout</a></html>
-
+</html>

@@ -1,7 +1,7 @@
-{% load static %}
+{% extends 'header.html' %}{% load static %}
 <link rel="stylesheet" href="{% static 'alerts.css' %}" >
 
-<body>{% include 'header.html' %}{% include 'reportmenu.html' %}
+<body>{% block content %}{% include 'reportmenu.html' %}
 
 
     <p>
@@ -45,6 +45,6 @@
         {% endfor %}
     </ol>
     {% else %}
-    <P>no reports here</P>{% endif %}
+    <P>no reports here</P>{% endif %}{% endblock %}
     <script src="{% static 'report.js' %}"></script>
 </body>

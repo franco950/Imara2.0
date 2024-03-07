@@ -19,6 +19,9 @@ import requests
 import os
 from datetime import datetime
 from urllib.parse import unquote
+from django.db.models import Count, F, ExpressionWrapper, DateTimeField
+from django.db.models.functions import Extract
+
 
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 directory_path = 'testapp\joblib models'
@@ -95,12 +98,48 @@ except:
 
 def prediction(data):
     return loaded_model.predict(data)
-
+tra=transaction.objects.filter(transaction_state='incoming')
+for alll in tra:
+    try:
+        transaction_list= list(map(float, alll.transaction_data.split(',')))
+        input_data = np.array(transaction_list)
+        reshaped_data = input_data.reshape(1, -1)
+    except:
+        pass
+    try:
+        done=prediction(reshaped_data)
+    except Exception as e:
+        alll.transaction_state='invalid data'
+        alll.save()
+        
+    
+    newid=alll.transactionid
+    if done==0:
+        pred='legitimate'
+        alll.transaction_state='predicted'
+        alll.save()
+        
+    elif done==1:
+        pred='fraud'
+        transactlocation=alll.location
+        try:
+            userd=CustomUser.objects.get(location=transactlocation, department='agent')
+            mystaffid = userd.staffid
+            new_entry = alert.objects.create( transactionid=alll.transactionid,
+                                            staffid=mystaffid, alert_status='waiting')
+            new_entry.save()
+            alll.transaction_state='predicted'
+            alll.save()
+        except:
+            pass
+        
+        
 locations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
 regions=['Kiambu','Thika','Online']
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transactions(request):
+    
     if request.method=='POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
@@ -143,6 +182,7 @@ def transactions(request):
             new_entry.save()
             newentry.transaction_state='predicted'
             newentry.save()
+            
         
             # Respond with a JSON success message
         return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
@@ -158,20 +198,23 @@ def home(request):
     else:
         content={'set':'guest'}
     all_transactions=transaction.objects.all().count()
+    predicted=transaction.objects.filter(transaction_state='predicted').count()
+    pending=all_transactions-predicted
     all_alerts=alert.objects.all().count()
     rejected=alert.objects.filter(alert_status='rejected').count()
     approved=alert.objects.filter(alert_status='approved').count()
-    print(approved)
+    data = transaction.objects.annotate(hour=Extract('timestamp','hour')).values('hour').annotate(count=Count('transactionid')).order_by('hour')
+   
     try:
-        approval_rate=(approved/all_alerts)*100
-        print(approval_rate)
+        approval_rate=int((approved/(approved+rejected))*100)
+        
     except:
         pass
     waiting=alert.objects.filter(alert_status='waiting').count()
     all_reports=report.objects.all().count()
     false_positives=report.objects.filter(report_status='false positive').count()
     false_negatives=report.objects.filter(report_status='false negative').count()
-    general_stats={'all_transactions':all_transactions,'all_alerts':all_alerts,'approved':approved,
+    general_stats={'all_transactions':all_transactions,'transactions_per_hour':list(data),'predicted_transactions':predicted,'pending_transactions':pending,'all_alerts':all_alerts,'approved':approved,
         'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
         'false_positives':false_positives,'false_negatives':false_negatives}
     if request.method == 'POST':
@@ -195,7 +238,7 @@ def home(request):
             areas = [loc for loc in locations if re.match(f'^{re.escape(region)}', loc)]
             transactions = transaction.objects.filter(location__in=areas).values_list('transactionid',flat=True)
             get_alert=alert.objects.filter(alert_status=[stat for stat in status if status],timestamp__range=[start, end ],transactionid__in=transactions).count()
-            print(get_alert)
+            
             return get_alert
         
         def get_station(loca,start,end,status):
@@ -232,7 +275,7 @@ def home(request):
     #     return render(request, 'homepage.html',context)
     #except:
     else:
-        print(general_stats)
+        
         context={'content':content,'general_stats':general_stats}
         return render(request, 'homepage.html',context)
     
@@ -407,8 +450,6 @@ def system(request):
             settings.save()
 
     return render(request, 'modelpage.html')
-
-   
 
 @login_required
 def guidelines(request):

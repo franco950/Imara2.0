@@ -22,18 +22,9 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login', include('login.urls')),
-    path('',home,name='home'),
-    path('transactions',transactions,name='transactions'),
-    path('alerts',alerts,name='alerts'),
-    path('feedback',feedback,name='feedback'),
-    path('reports',reports,name='reports'),
-    path('blacklist',blacklists,name='blacklist'),
-    path('model',system,name='model'),
-    path('guidelines',guidelines,name='guidelines'),
-    path('logout/', logout_view, name='logout'),
+   
     #re_path(r'^.*', TemplateView.as_view(template_name='dashboard/build/index.html')),
-   # path('testapp', include('testapp.urls', namespace='testapp')),
+    path('', include('testapp.urls'))
     
 
 ]

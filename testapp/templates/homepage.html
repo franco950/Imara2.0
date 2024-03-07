@@ -1,67 +1,104 @@
-{% load static %}
+{% extends 'header.html' %}{% block content %}{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <!-- <link rel="stylesheet" href="/node_modules/chart.js/dist/Chart.min.css">
-  -->
-  <title>Your Dashboard</title>
-</head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="{% static 'homepage.css' %}"></head>
 
-<body>
-  {% include 'header.html' %}<p>Hello, {{content.set}}</p><p>welcome to Imara.</p>{{general_stats}}
+<body >
+  <div id="main" >
+  <p>Hello, {{content.set}}</p><p>welcome to Imara.</p>
+
   
-    <p><form id="dataCollectionForm">
+  <p><form id="dataCollectionForm">
   {% csrf_token %}
-  <div id="pieChart"></div>
   
   <label for="start_date">Start Date:</label>
   <input type="date" id="start_date" name="start_date" value="2024-01-01">
 
-  <br>
+ 
 
   <label for="end_date">End Date:</label>
   <input type="date" id="end_date" name="end_date" value="2024-12-31">
 
-  <br>
-
   <label for="location">Location:</label>
   <input type="text" id="location" name="location" value="regions">
-
-  <br>
-
   <label for="station">Station:</label>
   <input type="text" id="station" name="station" value="locations">
-
-  <br>
-
   <label for="specify">Specify:</label>
   <input type="text" id="specify" name="specify" value="locations">
-
-  <br>
-
   <label for="status">Status:</label>
   <select id="status" name="status">
     <option value="approved" selected>Approved</option>
     <option value="rejected">Rejected</option>
     <option value="waiting">Waiting</option>
   </select>
-
   <br>
-  <!-- <script>
-  var generalStats = {{ general_stats}}
-  </script> -->
-  <!-- Submit Button -->
+<script>
+    // Pass the general_stats dictionary to JavaScript
+    var generalStats = {{ general_stats|safe }};
+</script>
   <button type="button" onclick="">Submit</button>
 </form></p>
-<!-- Add this inside the body of your HTML file where you want the pie chart -->
-<div>
-  <canvas id="pieChart" width="400" height="400"></canvas>
+
+
+<div class="card cards1" style="background-color: #3498db;">
+  <h3>Transactions</h3>
+  <div class="transactions-info">
+    <div class="transactions-column">
+      <h4>Predicted</h4>
+      <p>{{general_stats.predicted_transactions}}</p>
+    </div>
+    <div class="transactions-column">
+      
+      <h4>Pending</h4>
+      <p>{{general_stats.pending_transactions}}</p>
+    </div>
+  </div>
 </div>
-<!--<script type="module" src="{% static '/chart.js' %}" %></script>-->
+<div class="card cards2"style="background-color: #e74c3c;">
+  <h3>Alerts</h3>
+  <div class="transactions-info">
+    <div class="transactions-column">
+      <h4>Total alerts</h4>
+      <p>{{general_stats.all_alerts}}</p>
+    </div>
+    <div class="transactions-column">
+      <h4>Pending alerts</h4>
+      <p>{{general_stats.waiting}}</p>
+    </div>
+    <div class="transactions-column">
+      
+      <h4>Approval Rate</h4>
+      <p>{{general_stats.approval_rate}}%</p>
+    </div>
+  </div>
+</div><br>
+<!-- <div class="card cards" style="background-color: #3498db;">
+  <h3>All reports</h3>
+  <p>{{general_stats.all_reports}}</p>
+</div><br> -->
+
+<div class="card pies"style="background-color: #fff;">
+  <h3 >Approval</h3>
+  <div class="card"id="pieChart2"></div>
+</div>
+<div class="card pies"style="background-color: #fff;">
+  <h3 >Reports</h3>
+  <div class="card"id="pieChart"></div>
+</div>
+<div class="card pies2" style="background-color: #fff;">
+  <h3>Hourly Average Transaction Count</h3>
+  <div class="card" id="barChart"></div>
+</div>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
-<script src="{% static '/homepage.js' %}"></script>
+<script src="{% static 'homepage.js' %}"></script>
+{% endblock %}
+
+{% include 'footer.html' %}
+</div>
 </body>
-</html>
+
