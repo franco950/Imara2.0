@@ -15,12 +15,12 @@
         <p>Hello, {{content.set}}</p>
         <p>Welcome to Imara.</p>
 
-        <form id="dataCollectionForm"onsubmit="submitForm(event)">
+        <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
 
 
             <div>
-                <button id="showCustomTimeBtn" type="button">Time View</button><br>
+                <button id="showCustomTimeBtn" type="button">Time View</button>Filtered values:{{general_stats.time_view}}<br>
                 <div id="custom-time-dropdown" style="display: none;">
                     <label for="custom_start_date">Start Date:</label>
                     <input type="date" id="custom_start_date" name="custom_start_date" value="2020-01-01">
@@ -37,23 +37,23 @@
                         <option value="lastThreeMonths">Last Three Months</option>
                         <option value="lastSixMonths">Last Six Months</option>
                         <option value="lastYear">Last Year</option>
-                        <option value="allTime"  selected>All Time</option> 
+                        <option value="allTime"  >All Time</option> 
                     </select>
 
                     <!-- Submit button for custom time selection -->
                     <button id="customTimeSubmitBtn" type="button">Apply</button>
                 </div>
-            </div>
+            </div><br>
 
             <!-- For Stations -->
-            <button id="showStationsBtn" type="button">Stations view</button>
+            <button id="showStationsBtn" type="button">Stations view</button>Filtered values:{{general_stats.filtered_stations}}<br>
             <div id="station-dropdown" style="display: none;">
                 {% for item in general_stats.stations %}
                     <label>
-                        <input type="checkbox" name="stations" value="{{ item }}"> {{ item }}<br>
+                        <input type="checkbox" name="stations" value="{{ item }}" selected> {{ item }}<br>
                     </label>
                 {% endfor %}
-            </div>
+            </div><br>
 
             <!-- For Locations -->
             <!-- <button id="showLocationsBtn" type="button">Locations view</button>
@@ -65,7 +65,7 @@
                 {% endfor %}
             </div> -->
 
-            <button type="submit" >Submit</button>
+            <button type="submit" value="submit">Filter</button>
         </form>
     </div>
 

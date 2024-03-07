@@ -7,13 +7,13 @@ document.addEventListener('DOMContentLoaded', function () {
       stationDropdown.style.display = (stationDropdown.style.display === 'none') ? 'block' : 'none';
   });
 
-  var locationDropdown = document.getElementById('location-dropdown');
-  var showLocationsBtn = document.getElementById('showLocationsBtn');
+  // var locationDropdown = document.getElementById('location-dropdown');
+  // var showLocationsBtn = document.getElementById('showLocationsBtn');
 
-  showLocationsBtn.addEventListener('click', function (event) {
-      event.preventDefault();
-      locationDropdown.style.display = (locationDropdown.style.display === 'none') ? 'block' : 'none';
-  });
+  // showLocationsBtn.addEventListener('click', function (event) {
+  //     event.preventDefault();
+  //     locationDropdown.style.display = (locationDropdown.style.display === 'none') ? 'block' : 'none';
+  // });
 
   var customTimeDropdown = document.getElementById('custom-time-dropdown');
   var showCustomTimeBtn = document.getElementById('showCustomTimeBtn');
@@ -31,15 +31,12 @@ document.addEventListener('DOMContentLoaded', function () {
   customTimeSubmitBtn.addEventListener('click', function (event) {
       event.preventDefault();
 
-      // Commenting the line below will keep the dropdown visible
-      // customTimeDropdown.style.display = 'none';
-
       var currentDate = new Date();
       var selectedOption = customTimeOptions.value;
 
       switch (selectedOption) {
           case 'lastDay':
-              adjustDates(new Date(currentDate.setDate(currentDate.getDate() - 1)));
+              adjustDates(new Date(currentDate.setDate(currentDate.getDate() - 1 )));
               break;
           case 'lastWeek':
               adjustDates(new Date(currentDate.setDate(currentDate.getDate() - 7)));
@@ -70,14 +67,14 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 });
-function submitForm(event) {
-  event.preventDefault(); // Prevent the default form submission behavior
+// function submitForm(event) {
+//   event.preventDefault(); // Prevent the default form submission behavior
 
-  // Perform any additional actions or data processing here if needed
+//   // Perform any additional actions or data processing here if needed
 
-  // Reload the page
-  location.reload();
-} 
+//   // Reload the page
+//   location.reload();
+// } 
 var pieData = [
   { label: 'False Positives', value: generalStats.false_positives },
   { label: 'False Negatives', value: generalStats.false_negatives }

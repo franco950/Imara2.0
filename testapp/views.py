@@ -219,24 +219,17 @@ def home(request):
         content={'set':name}
     else:
         content={'set':'guest'}
-    filter_stations=[loc for loc in locator(request).get('staff_stations')]
-    filter_locations=[loc for loc in locator(request).get('staff_locations')]
+    filter_stations=locator(request).get('staff_stations')
+    filter_locations=locator(request).get('staff_locations')
     
     current_date = datetime.now()
     # Calculate the date 5 years ago
     five_years_ago = current_date - timedelta(days=365 * 5)
-    custom_start_date = five_years_ago
-    custom_end_date=current_date
-
-    if request.method == 'POST':
-        print('yaaaaaay')
-        custom_start_date = request.POST.get('custom_start_date', '')
-        custom_end_date = request.POST.get('custom_end_date', '')
-        custom_time_option = request.POST.get('customTimeOptions', '')
-        filter_stations = request.POST.getlist('stations')
-        filter_locations = request.POST.getlist('locations')
-    filter_transactions = transaction.objects.filter(location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')]).values_list('transactionid',flat=True)
-            
+    custom_start_date = five_years_ago.strftime("%Y-%m-%d")
+    custom_end_date=current_date.strftime("%Y-%m-%d")
+    time_view=[custom_start_date,' to ',custom_end_date]
+    filter_transactions = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+         
     all_transactions=transaction.objects.filter(timestamp__range=[custom_start_date, custom_end_date ],location__in=locator(request).get('staff_stations')).count()
     predicted=transaction.objects.filter(transaction_state='predicted',timestamp__range=[custom_start_date, custom_end_date ],location__in=locator(request).get('staff_stations')).count()
     pending=all_transactions-predicted
@@ -257,10 +250,54 @@ def home(request):
     false_negatives=report.objects.filter(report_status='false negative',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
     general_stats={'all_transactions':all_transactions,'transactions_per_hour':list(data),'predicted_transactions':predicted,'pending_transactions':pending,'all_alerts':all_alerts,'approved':approved,
         'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
-        'false_positives':false_positives,'false_negatives':false_negatives,'locations':locator(request).get('staff_locations'),'stations':locator(request).get('staff_stations')}
-    
-
+        'false_positives':false_positives,'false_negatives':false_negatives,'locations':locator(request).get('staff_locations'),'stations':locator(request).get('staff_stations'),'time_view':time_view}
     context={'content':content,'general_stats':general_stats}
+
+
+    if request.method == 'POST':
+        
+        custom_start_date = request.POST.get('custom_start_date', '')
+        custom_end_date = request.POST.get('custom_end_date', '')
+        time_view=[custom_start_date,' to ',custom_end_date]
+        custom_time_option = request.POST.get('customTimeOptions', '')
+        filter_stations = request.POST.getlist('stations')
+        
+        if len(filter_stations)==0:
+        
+            filter_stations=locator(request).get('staff_stations')
+        
+
+        #filter_locations = request.POST.getlist('locations')
+        filter_transactions = transaction.objects.filter(location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')]).values_list('transactionid',flat=True)
+              
+        all_transactions=transaction.objects.filter(timestamp__range=[custom_start_date, custom_end_date ],location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')]).count()
+        predicted=transaction.objects.filter(transaction_state='predicted',timestamp__range=[custom_start_date, custom_end_date ],location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')]).count()
+        pending=all_transactions-predicted
+        all_alerts=alert.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+        rejected=alert.objects.filter(alert_status='rejected',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+        approved=alert.objects.filter(alert_status='approved',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+        
+        data = transaction.objects.filter(location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')],timestamp__range=[custom_start_date, custom_end_date ]).annotate(hour=Extract('timestamp','hour')).values('hour').annotate(count=Count('transactionid')).order_by('hour')
+    
+        try:
+            approval_rate=int((approved/(approved+rejected))*100)
+            
+        except:
+            approval_rate=0
+        waiting=alert.objects.filter(alert_status='waiting',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+        all_reports=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
+        false_positives=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions,report_status='false positive').count()
+        false_negatives=report.objects.filter(report_status='false negative',timestamp__range=[custom_start_date, custom_end_date],transactionid__in=filter_transactions).count()
+        general_stats={'all_transactions':all_transactions,'transactions_per_hour':list(data),'predicted_transactions':predicted,'pending_transactions':pending,'all_alerts':all_alerts,'approved':approved,
+            'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
+            'false_positives':false_positives,'false_negatives':false_negatives,'locations': locator(request).get('staff_locations'),'stations': locator(request).get('staff_stations'),
+            'filtered_stations':[loc for loc in filter_stations if loc in locator(request).get('staff_stations')],'time_view':time_view}
+        context={'content':content,'general_stats':general_stats}
+        return render(request, 'homepage.html',context)
+    else:
+        pass
+
+    
     return render(request, 'homepage.html',context)
 
   
