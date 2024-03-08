@@ -21,14 +21,25 @@
 
     <div id="sideMenu">
         <ul>
-            <li><a href="{% url 'home' %}">Dashboard</a></li>
-            <li><a href="{% url 'alerts' %}">Alerts</a></li>
-            <li><a href="{% url 'reports' %}">Reports</a></li>
+    
+            <li class="{% if request.path == 'home/' %}active{% endif %}"><a href="{% url 'home' %}">Dashboard</a></li>
+            <li class="{% if request.path == 'alerts/' %}active{% endif %}"><a href="{% url 'alerts' %}">Alerts</a></li>
+            <li class="{% if request.path == 'reports/' %}active{% endif %}"><a href="{% url 'reports' %}">Reports</a></li>
             <!-- <li><a href="{% url 'guidelines' %}">Guidelines</a></li> -->
-            <li><a href="{% url 'admin:index' %}">Admin</a></li>
+            <li class="{% if request.path == 'admin:index/' %}active{% endif %}"><a href="{% url 'admin:index' %}">Admin</a></li>
         </ul>
     </div>
-
+   
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var currentPath = "{{ request.path }}"; // Get the current path from Django template
+            var activeLink = document.querySelector(`#sideMenu ul li a[href='${currentPath}']`);
+            
+            if (activeLink) {
+                activeLink.parentNode.classList.add('active');
+            }
+        });
+    </script>
     <div id="content">
         <!-- Page content goes here -->
         {% block content %}{% endblock %}

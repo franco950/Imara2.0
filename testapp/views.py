@@ -353,7 +353,8 @@ def alerts(request):
         context={'set':alertpage,'content':content}
         return render(request,'alertpage.html',context)    
     else:
-        return render(request,'alertpage.html') 
+        context={'content':content}
+        return render(request,'alertpage.html',context) 
 
 @api_view(['GET'])   
 @permission_classes([IsAuthenticated])
@@ -410,6 +411,7 @@ def reports(request):
     if entry_count>0:
         context={'set':reportspage,'content':content}
     else:
+        context={'content':content}
         return render(request, 'reportspage.html')
             
     return render(request, 'reportspage.html',context)

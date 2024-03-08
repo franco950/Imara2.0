@@ -39,3 +39,11 @@
     font-size: 28px;
     font-weight: bold;
 }
+#main {
+    min-height: 100vh; /* Set the minimum height to 100% of the viewport height */
+    width: 100%; /* Set the width to 100% */
+    background-color: #f0f0f0; /* Optional: Set background color for visualization */
+    margin: 0; /* Remove default margin */
+    padding: 20px; /* Optional: Add padding for content */
+    box-sizing: border-box;
+}

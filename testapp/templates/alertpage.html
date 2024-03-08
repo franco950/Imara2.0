@@ -1,20 +1,19 @@
-{% extends 'header.html' %}{% load static %}
+{% extends 'header.html' %}{% load static %}{% block content %}
 <link rel="stylesheet" href="{% static 'alerts.css' %}" >
 
-
-<body>{% block content %}
-
-  
-  <p>pending alerts: </p>
-<ul> {% for items in set %}
-  <li>
-      <p> <form method="post" action="{% url 'alerts' %}">{{ items }}<input type="hidden" name="item_value" value="{{ items }}">{% csrf_token %}
-      <button type=submit class="approve-btn" name="action" value="approve" >Approve transaction</button>
+<body>
+  <div id="main">
     
-      <button type=submit class="reject-btn" name="action" value="reject">Stop transaction</button></form></p>
-  </li>
-{% endfor %}</ul>
+    <p>pending alerts:</p>
+    <ul> {% for items in set %}
+      <li>
+          <p> <form method="post" action="{% url 'alerts' %}">{{ items }}<input type="hidden" name="item_value" value="{{ items }}">{% csrf_token %}
+          <button type=submit class="approve-btn" name="action" value="approve" >Approve transaction</button>
+        
+          <button type=submit class="reject-btn" name="action" value="reject">Stop transaction</button></form></p>
+      </li>{% endfor %}
+    </ul>
+  </div>
 
-{% endblock %}
-</body>
+</body>{% endblock %}
 </html>
