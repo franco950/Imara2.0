@@ -4,24 +4,28 @@
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap">
     <link rel="stylesheet" href="{% static 'header.css' %}">
     <title>Imara</title>
 </head>
 <body>
 
-    <div id="topBar"><div id="logo" > <img src="{% static 'imarasmall.png' %}"width='250px' height="80px" alt="logo"></div>
+    <div id="topBar">
+        <div id="logo" > <img src="{% static 'imarasmall.png' %}"width='200px' height="80px" alt="logo"></div>
         <!-- Add content for the top bar -->
-        <p>Welcome to Imara!</p>
+        
+        <div id="settings"><a href="{% url 'model' %}"><img src="{% static 'settings.245x256.png' %}" width='40px' height="40px" alt="settings icon"></a></div>
+        <div id="logout"><a href="{% url 'logout' %}">Log out</a></div>
+        <div id="user"><img src="{% static 'user.png' %}"width='40px' height="40px" alt="user icon">User:{{content.set}}</div>
     </div>
 
     <div id="sideMenu">
         <ul>
-            <li><a href="{% url 'home' %}">dashboard</a></li>
-            <li><a href="{% url 'alerts' %}">alerts</a></li>
-            <li><a href="{% url 'reports' %}">reports</a></li>
-            <li><a href="{% url 'model' %}">model</a></li>
-            <li><a href="{% url 'guidelines' %}">guidelines</a></li>
-            <li><a href="{% url 'admin:index' %}">admin</a></li>
+            <li><a href="{% url 'home' %}">Dashboard</a></li>
+            <li><a href="{% url 'alerts' %}">Alerts</a></li>
+            <li><a href="{% url 'reports' %}">Reports</a></li>
+            <!-- <li><a href="{% url 'guidelines' %}">Guidelines</a></li> -->
+            <li><a href="{% url 'admin:index' %}">Admin</a></li>
         </ul>
     </div>
 

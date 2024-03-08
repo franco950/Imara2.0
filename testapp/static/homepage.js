@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function () {
 //   location.reload();
 // } 
 var pieData = [
-  { label: 'False Positives', value: generalStats.false_positives },
-  { label: 'False Negatives', value: generalStats.false_negatives }
+  { label: 'False Positive', value: generalStats.false_positives },
+  { label: 'False Negative', value: generalStats.false_negatives }
 ];
 
     // Set up dimensions for the SVG container
@@ -94,7 +94,9 @@ var pieData = [
       .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
     // Create a color scale for better distinction
-    var color = d3.scaleOrdinal(d3.schemeCategory10);
+    var colorScale = d3.scaleOrdinal()
+      .domain(['False Positives', 'False Negatives'])
+      .range(['#3498db', '#ff0054']);
 
     // Create a pie chart
     var pie = d3.pie()
@@ -111,11 +113,12 @@ var pieData = [
       .enter()
       .append("g")
       .attr("class", "arc");
+      
 
     slices.append("path")
       .attr("d", arc)
-      .attr("fill", function (d) { return color(d.data.label); })
-      .style("opacity", 0.7) // Set the opacity for better visibility
+      .attr("fill", function (d) { return colorScale(d.data.label); })
+      .style("opacity", 1) // Set the opacity for better visibility
       .style("stroke", "#fff") // Add stroke for better separation
       .style("stroke-width", 2); // Adjust stroke width
 
@@ -133,39 +136,41 @@ var pieData2 = [
   { label: 'Approved', value: generalStats.approved },
   { label: 'Rejected', value: generalStats.rejected }
 ];
-    // Set up dimensions for the SVG container
-    var width =200;
-    var height = 200;
-    var radius = Math.min(width, height) / 2;
+  // Set up dimensions for the SVG container
+  var width =210;
+  var height = 200;
+  var radius = Math.min(width, height) / 2;
 
-    // Create an SVG container with a margin for better centering
-    var svg = d3.select("#pieChart2")
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-    // Create a color scale for better distinction
-    var color = d3.scaleOrdinal(d3.schemeCategory10);
-
-    // Create a pie chart
-    var pie = d3.pie()
-      .value(function (d) { return d.value; });
-
-    // Define the arc
-    var arc = d3.arc()
-      .outerRadius(radius * 0.8)
-      .innerRadius(radius * 0.4);
-var slices2 = svg.selectAll(".arc2")
-    .data(pie(pieData2))
-    .enter()
+  // Create an SVG container with a margin for better centering
+  var svg = d3.select("#pieChart2")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
     .append("g")
-    .attr("class", "arc2");
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+  // Create a color scale for better distinction
+  var colorScale = d3.scaleOrdinal()
+      .domain(['Approved', 'Rejected'])
+      .range(['#3498db', '#ff0054']);
+
+  // Create a pie chart
+  var pie = d3.pie()
+    .value(function (d) { return d.value; });
+
+  // Define the arc
+  var arc = d3.arc()
+    .outerRadius(radius * 0.8)
+    .innerRadius(radius * 0.4);
+  var slices2 = svg.selectAll(".arc2")
+      .data(pie(pieData2))
+      .enter()
+      .append("g")
+      .attr("class", "arc2");
   slices2.append("path")
     .attr("d", arc)
-    .attr("fill", function (d) { return color(d.data.label); })
-    .style("opacity", 0.7) // Set the opacity for better visibility
+    .attr("fill", function (d) { return colorScale(d.data.label); })
+    .style("opacity", 1) // Set the opacity for better visibility
     .style("stroke", "#fff") // Add stroke for better separation
     .style("stroke-width", 2); // Adjust stroke width
 

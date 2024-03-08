@@ -1,8 +1,10 @@
 .card.cards {
+    
     width: 200px;
     height: 200px;
     padding: 15px;
-    margin: 10px;
+    margin-left: 20px;
+    margin: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     color: #fff;
@@ -13,7 +15,8 @@
     width: 400px; /* Adjusted width to accommodate the additional content */
     height: 150px;
     padding: 15px;
-    margin: 10px;
+    margin-left: 20px;
+    margin: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     color: #fff;
@@ -25,7 +28,8 @@
     width: 490px; /* Adjusted width to accommodate the additional content */
     height: 150px;
     padding: 15px;
-    margin: 10px;
+    margin-left: 20px;
+    margin: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     color: #fff;
@@ -48,7 +52,7 @@
     width: 200px;
     height: 350px;
     padding: 13px;
-    margin: 9px;
+    margin: 15px;
     border-radius: 7px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -57,9 +61,9 @@
     transition: box-shadow 0.3s ease; /* Add a transition for a smoother effect on hover */
 }
 .card.pies2 {
-    width: 534px;
+    width: 540px;
     height: 365px;
-    padding: 5px;
+    padding: 15px;
     margin: 7px;
     border-radius: 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -80,8 +84,8 @@
 
 #main {
     background-color: #f0f0f0; /* Change to the desired background color */
-    padding: 16px; /* Adjust padding based on your design */
-    margin:0;
+    padding: 30px; /* Adjust padding based on your design */
+    margin:20px;
 }
 /* Style for dropdown containers */
 #time-view-dropdown {

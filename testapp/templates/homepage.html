@@ -11,15 +11,13 @@
 </head>
 
 <body>
-    <div id="main">
-        <p>Hello, {{content.set}}</p>
-        <p>Welcome to Imara.</p>
+    <div id="main" style="background-color: #ffffff;"><p><h3>Filter Statistics</h3></p>
 
         <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
 
 
-            <div>
+            <div >
                 <button id="showCustomTimeBtn" type="button">Time View</button>Filtered values:{{general_stats.time_view}}<br>
                 <div id="custom-time-dropdown" style="display: none;">
                     <label for="custom_start_date">Start Date:</label>
@@ -46,7 +44,7 @@
             </div><br>
 
             <!-- For Stations -->
-            <button id="showStationsBtn" type="button">Stations view</button>Filtered values:{{general_stats.filtered_stations}}<br>
+            <button id="showStationsBtn" type="button">Location view</button>Filtered values:{{general_stats.filtered_stations}}<br>
             <div id="station-dropdown" style="display: none;">
                 {% for item in general_stats.stations %}
                     <label>
@@ -92,7 +90,7 @@
     </div>
   </div>
 </div>
-<div class="card cards2"style="background-color: #e74c3c;">
+<div class="card cards2"style="background-color: #ff0054;">
   <h3>Alerts</h3>
   <div class="transactions-info">
     <div class="transactions-column">

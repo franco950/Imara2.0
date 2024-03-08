@@ -22,7 +22,6 @@ from urllib.parse import unquote
 from django.db.models import Count, F, ExpressionWrapper, DateTimeField
 from django.db.models.functions import Extract
 
-
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 directory_path = 'testapp\joblib models'
 file_names = os.listdir(directory_path)
@@ -142,8 +141,9 @@ def locator(request):
 
         if user.is_authenticated:
             if user.department == 'agent' or user.department == 'manager':
-                staff_station = user.location
-                staff_locations = [loc for loc in all_locations if re.match(f'^{re.escape(staff_station)}', loc)]
+                staff_location = user.location
+                staff_station = [loc for loc in all_stations if re.match(f'^{re.escape(staff_location)}', loc)]
+                
             elif user.department in ['support staff', 'admin']:
                 # Support staff and admin see alerts from all locations
                 staff_location = all_locations
@@ -211,14 +211,15 @@ def transactions(request):
                             'prediction':str(pred),'mode':'manual'})
         
 
-      
+@login_required
 def home(request):
     user = request.user
     name=user.username
     if user.is_authenticated:
         content={'set':name}
-    else:
-        content={'set':'guest'}
+        message='Welcome to Imara.'
+    
+
     filter_stations=locator(request).get('staff_stations')
     filter_locations=locator(request).get('staff_locations')
     
@@ -237,13 +238,14 @@ def home(request):
     rejected=alert.objects.filter(alert_status='rejected',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
     approved=alert.objects.filter(alert_status='approved',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
     
-    data = transaction.objects.filter(timestamp__range=[custom_start_date, custom_end_date ]).annotate(hour=Extract('timestamp','hour')).values('hour').annotate(count=Count('transactionid')).order_by('hour')
+    data = transaction.objects.filter(location__in= locator(request).get('staff_stations'),timestamp__range=[custom_start_date, custom_end_date ]).annotate(hour=Extract('timestamp','hour')).values('hour').annotate(count=Count('transactionid')).order_by('hour')
    
     try:
         approval_rate=int((approved/(approved+rejected))*100)
         
     except:
-        pass
+        approval_rate=0
+        
     waiting=alert.objects.filter(alert_status='waiting',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
     all_reports=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
     false_positives=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions,report_status='false positive').count()
@@ -292,19 +294,21 @@ def home(request):
             'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
             'false_positives':false_positives,'false_negatives':false_negatives,'locations': locator(request).get('staff_locations'),'stations': locator(request).get('staff_stations'),
             'filtered_stations':[loc for loc in filter_stations if loc in locator(request).get('staff_stations')],'time_view':time_view}
-        context={'content':content,'general_stats':general_stats}
+        context={'content':content,'general_stats':general_stats,'login':message}
         return render(request, 'homepage.html',context)
     else:
         pass
-
-    
     return render(request, 'homepage.html',context)
 
   
 @login_required
 def alerts(request):
-    
+    user = request.user
+    name=user.username
+    if user.is_authenticated:
+        content={'set':name}
     staff_location=locator(request).get('staff_stations')
+    print(staff_location)
     # if user.is_authenticated:
     #     if user.department=='agent':
     #         staff_location = user.location
@@ -346,8 +350,8 @@ def alerts(request):
 
     if count>0:
         
-        content={'set':alertpage}
-        return render(request,'alertpage.html',content)    
+        context={'set':alertpage,'content':content}
+        return render(request,'alertpage.html',context)    
     else:
         return render(request,'alertpage.html') 
 
@@ -373,6 +377,10 @@ def feedback(request):
   
 @login_required
 def reports(request):
+    user = request.user
+    name=user.username
+    if user.is_authenticated:
+        content={'set':name}
 
     if request.method == 'POST':
         user=request.user
@@ -400,7 +408,7 @@ def reports(request):
    
     entry_count = reportspage.count()
     if entry_count>0:
-        context={'set':reportspage}
+        context={'set':reportspage,'content':content}
     else:
         return render(request, 'reportspage.html')
             
@@ -408,13 +416,17 @@ def reports(request):
 
 @login_required
 def blacklists(request):
+    user = request.user
+    name=user.username
+    if user.is_authenticated:
+        content={'set':name}
 
     full_list=blacklist.objects.all()
 
     count=full_list.count()
   
     if count>0:
-         content={'set':full_list}
+         context={'set':full_list,'content':content}
 
     if request.method == 'POST':
         action=request.POST.get('action')
@@ -427,10 +439,14 @@ def blacklists(request):
             delete = get_object_or_404(blacklist, blacklistid=mylistid)
             delete.delete()
     
-    return render(request,'blacklist.html',content)
+    return render(request,'blacklist.html',context)
 
 @login_required
 def system(request):
+    user = request.user
+    name=user.username
+    if user.is_authenticated:
+        content={'set':name}
     settings = None
     
     if request.method == 'POST':
@@ -470,11 +486,15 @@ def system(request):
             # Save the instance after making changes
             settings.save()
 
-    return render(request, 'modelpage.html')
+    return render(request, 'modelpage.html',content)
 
 @login_required
 def guidelines(request):
-    return render(request,'guidelines.html')
+    user = request.user
+    name=user.username
+    if user.is_authenticated:
+        content={'set':name}
+    return render(request,'guidelines.html',content)
 
 def logout_view(request):
     logout(request)

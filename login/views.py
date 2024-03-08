@@ -1,6 +1,6 @@
 from django.http import HttpResponse 
 from .forms import loginform
-from testapp.views import alerts
+from testapp.views import home,alerts
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate,login
 
