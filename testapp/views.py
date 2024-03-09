@@ -309,16 +309,6 @@ def alerts(request):
         content={'set':name}
     staff_location=locator(request).get('staff_stations')
     print(staff_location)
-    # if user.is_authenticated:
-    #     if user.department=='agent':
-    #         staff_location = user.location
-    #     elif user.department=='manager':
-    #         area=user.location
-    #         staff_location = [loc for loc in locations if re.match(f'^{re.escape(area)}', loc)]
-            
-    #     else:
-    #         #support staff and admin see alerts from all locations
-    #         staff_location=locations
    
     if request.method == 'POST':
 
@@ -349,12 +339,14 @@ def alerts(request):
     count = alertpage.count()
 
     if count>0:
-        
-        context={'set':alertpage,'content':content}
-        return render(request,'alertpage.html',context)    
+        set_alert=f"Pending alerts:{count}"
+        statement={'set':set_alert}
+            
     else:
-        context={'content':content}
-        return render(request,'alertpage.html',context) 
+        set_alert='No pending alerts'
+        statement={'set':set_alert}
+    context={'set':alertpage,'content':content,'statement':statement}
+    return render(request,'alertpage.html',context) 
 
 @api_view(['GET'])   
 @permission_classes([IsAuthenticated])

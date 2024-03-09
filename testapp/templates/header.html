@@ -25,6 +25,7 @@
             <li class="{% if request.path == 'home/' %}active{% endif %}"><a href="{% url 'home' %}">Dashboard</a></li>
             <li class="{% if request.path == 'alerts/' %}active{% endif %}"><a href="{% url 'alerts' %}">Alerts</a></li>
             <li class="{% if request.path == 'reports/' %}active{% endif %}"><a href="{% url 'reports' %}">Reports</a></li>
+            <li class="{% if request.path == 'blacklist/' %}active{% endif %}"><a href="{% url 'blacklist' %}">Blacklist</a></li>
             <!-- <li><a href="{% url 'guidelines' %}">Guidelines</a></li> -->
             <li class="{% if request.path == 'admin:index/' %}active{% endif %}"><a href="{% url 'admin:index' %}">Admin</a></li>
         </ul>

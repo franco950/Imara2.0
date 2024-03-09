@@ -1,7 +1,7 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'login.css' %}" >
 <body>
-	<section class="login"><img src="{% static 'james webb.jpg' %}" alt="">
+	<section class="login" ><div  id="login"><img src="{% static 'james webb.jpg' %}" alt=""></div>
 		<div class="login_box">
 			<div class="left">
 				<div class="contact">
@@ -9,13 +9,13 @@
 						<h2>SIGN IN</h2>
                         {% csrf_token %}
                         {{ form }}
-						<button type="submit" class="submit">SUBMIT</button>
+						<button type="submit" class="submit">LOG IN</button>
 					</form>
 					<a href="{% url 'password_reset' %}">forgot password</a>
 				</div>
 		
 			</div>
-			<div class="right">
+			<div class="right" id="right">
 				
                 <img src="{% static 'imara.png' %}" alt="">
                 </div>

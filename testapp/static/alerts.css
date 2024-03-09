@@ -1,16 +1,24 @@
 .reject-btn {
-    background-color: #ce4f29;
-    color: white;
+    background-color:#a41623;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
+    color:white;/* white;*/
     padding: 10px;
     border: none;
     cursor: pointer;
 }
 .approve-btn {
-    background-color: #bec0db;
+    background-color: #a4a8dd;/*#a4a8dd;*/
     color: white;
     padding: 10px;
     border: none;
     cursor: pointer;
+}
+body{
+    top:0;
+    left:0;
+    margin:0;
+    padding:0;
+    text-decoration: none;
+
 }
 .modal {
     display: none;
@@ -40,10 +48,48 @@
     font-weight: bold;
 }
 #main {
-    min-height: 100vh; /* Set the minimum height to 100% of the viewport height */
+    height: 100%;
+    position:fixed;
+  
     width: 100%; /* Set the width to 100% */
     background-color: #f0f0f0; /* Optional: Set background color for visualization */
     margin: 0; /* Remove default margin */
-    padding: 20px; /* Optional: Add padding for content */
-    box-sizing: border-box;
+    padding: 0; /* Optional: Add padding for content */
+    
+    text-decoration: none;
 }
+#main ol{
+    
+    
+    text-decoration: none;
+
+}
+.card {
+    margin: 10px; /* Remove default margin */
+    padding: 0;
+    
+    padding:10px;
+}
+#main ol li{
+    position:relative;
+    
+    
+   
+    padding:10px;
+    background-color: white;
+    border-bottom: 1px solid #0e0d0d;
+    text-decoration: none;
+}
+#main ol li form{
+    
+    margin:0;
+    padding:0;
+    text-decoration: none;
+}
+#main ol li form input{
+   
+    margin:0;
+    padding:0;
+    text-decoration: none;
+}
+

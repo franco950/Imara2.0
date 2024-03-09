@@ -1,19 +1,24 @@
-<body>{% include 'header.html' %}{% include 'reportmenu.html' %}
+{% extends 'header.html' %}{% load static %}
+<link rel="stylesheet" href="{% static 'alerts.css' %}" >
+{% block content %}
+<body>
+    <div id="main">
     
 
-    <ol> {% for items in set %}
-        <li>
-            <p> 
-                <form method="post" action="{% url 'blacklist' %}">
-                    {{ items }}
-                    <input type="hidden"name="item_value" value="{{ items }}">
-                    {% csrf_token %}                   
-                    <button type=submit class="approve-btn" name="action" value="remove" >Remove
-                    </button>
-            
-                </form>
-            </p>
-        </li>
-        {% endfor %}
-    </ol>
-</body>
+        <ol> {% for items in set %}
+            <li>
+                <p> 
+                    <form method="post" action="{% url 'blacklist' %}">
+                        {{ items }}
+                        <input type="hidden"name="item_value" value="{{ items }}">
+                        {% csrf_token %}                   
+                        <button type=submit class="approve-btn" name="action" value="remove" >Remove
+                        </button>
+                
+                    </form>
+                </p>
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+</body>{% endblock %}

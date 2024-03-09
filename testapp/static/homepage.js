@@ -96,7 +96,7 @@ var pieData = [
     // Create a color scale for better distinction
     var colorScale = d3.scaleOrdinal()
       .domain(['False Positives', 'False Negatives'])
-      .range(['#3498db', '#ff0054']);
+      .range(['#1565c0', '#a41623']);//.range(['#3498db', '#ff0054']);
 
     // Create a pie chart
     var pie = d3.pie()
@@ -152,7 +152,7 @@ var pieData2 = [
   // Create a color scale for better distinction
   var colorScale = d3.scaleOrdinal()
       .domain(['Approved', 'Rejected'])
-      .range(['#3498db', '#ff0054']);
+      .range(['#1565c0', '#a41623'])//.range(['#3498db', '#ff0054']);
 
   // Create a pie chart
   var pie = d3.pie()
