@@ -5,6 +5,10 @@
     padding: 10px;
     border: none;
     cursor: pointer;
+
+}
+.reject-btn:hover {
+    color: #8a8484; 
 }
 .approve-btn {
     border-radius: 8px;
@@ -13,6 +17,9 @@
     padding: 10px;
     border: none;
     cursor: pointer;
+}
+.approve-btn:hover {
+    color: #8a8484; 
 }
 body{
     
@@ -52,8 +59,8 @@ body{
     font-weight: bold;
 }
 #main {
+    min-height: 78vh;
     height:100%;
- 
     background-position-x:fixed;
     background-position-y:absolute;
     width: 100%; 
@@ -68,8 +75,6 @@ body{
 }
 
 .card {
-
-
     width:1050px;
     background-position-x:fixed;
     margin-left: 30px;
@@ -102,9 +107,10 @@ tbody td {
     padding-left: 15px;
     border-bottom: 1px solid #ccc; /* Light line color */
 }
-tr:hover {
+tbody tr:hover {
     background-color: #f0e8e8; 
 }
+
 #menudots{
     height:20px;
     width:20px;

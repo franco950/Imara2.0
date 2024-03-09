@@ -417,10 +417,7 @@ def reports(request):
         time_view=[custom_start_date,' to ',custom_end_date]
 
         if action=='submit':
-            items=request.POST.get('item_value')
-            items=items.split(';')
-            reportid=items[0].split(':')
-            myreportid=reportid[1]
+            
             new_entry = report.objects.create(transactionid=report_transactionid,
             staffid=user.staffid, report_status=reportstatus, verification='waiting')
             new_entry.save()

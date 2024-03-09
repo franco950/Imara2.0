@@ -25,18 +25,29 @@ body{
 }
 
 .modal {
+    top: 100px;
+    display: none;
+   
+    position:fixed;
+    z-index: 10000;
+    width: 700px;
+    height: 400px;
+    overflow: auto;
+    padding-top: 10px;
+   
+    background-size:1000px ;
+    opacity: 100%;
+}
+#overlay {
     display: none;
     position: fixed;
-    z-index: 1;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(26, 35, 126, 0.4); /* Dark Blue with some transparency */
-    padding-top: 60px;
+    background-color: rgba(0, 0, 0, 0.5); /* Adjust the alpha channel for darkness */
+    z-index: 1; /* Place the overlay above other elements */
 }
-
 .modal-content {
     background-color: #fff;
     margin: 5% auto;
@@ -52,29 +63,29 @@ body{
     font-weight: bold;
 }
 #main {
-    height:100vh;
-
-
+    height:100%;
     width: 100%; 
     background-color: #f0f0f0; 
     margin: 0;
-    padding: 0; 
+    padding-bottom: 30px; 
     font-family: 'Arial', sans-serif;
 }
-#page{
-    height:100%;
-    position:fixed;
-    padding-left:20px;
-    margin:20px;
-}
+
 #title{
     margin-left:30px;
     padding:0;
 }
+#filter{
+    
+    background-color: #fff;
+    margin-left:30px;
+    padding-left:15px;
+
+}
 
 .card {
 
-    width:1000px;
+    width:1050px;
     background-position-x:fixed;
     margin-left: 30px;
     margin-right: 20px;
@@ -87,6 +98,7 @@ body{
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     
 }
+
 
 table {
     border-collapse: collapse;
@@ -104,7 +116,25 @@ tbody td {
     padding-left: 10px;
     border-bottom: 1px solid #ccc; /* Light line color */
 }
-
+#time-view-dropdown {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}
+#custom-time-dropdown {
+    
+    padding:10px;
+    border :10px;
+    margin: 10px;  /* Adjust margin as needed for spacing */
+}
+#showTimeViewBtn {
+    display: inline-block;
+    margin: 10px; /* Adjust margin as needed for spacing */
+}
+#showCustomTimeBtn {
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px; /* Adjust margin as needed for spacing */
+}
 
 
 

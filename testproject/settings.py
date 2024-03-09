@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'dbbackup',
     'login',
     'testapp', 
     'rest_framework',
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': 'database backups'}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

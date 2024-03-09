@@ -2,13 +2,13 @@
 <link rel="stylesheet" href="{% static 'reports.css' %}" >
 
 <body>
-    <div id="main">
-        <div id="page">
+    <div id="main"><div id="title"> <h2>Reports</h2></div>
+        
         <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
 
 
-            <div >
+            <div id="filter" class="card " ><h3>Filter Reports</h3>
                 <button id="showCustomTimeBtn" type="button">Time View</button>{% if time_view %}Filtered values:{{time_view}}{{endif}}<br>
                 <div id="custom-time-dropdown" style="display: none;">
                     <label for="custom_start_date">Start Date:</label>
@@ -32,7 +32,7 @@
                     <!-- Submit button for custom time selection -->
                     <button id="customTimeSubmitBtn" type="button">Apply</button>
                 </div>
-            </div><br>
+            
 
             <!-- For Stations -->
             <!-- <button id="showStationsBtn" type="button">Location view</button>Filtered values:{{general_stats.filtered_stations}}<br>
@@ -48,16 +48,16 @@
         </form>
 
     <p>
-        <button onclick=" openform()">Create report</button>
+        <button onclick=" openModal(event)">Create report</button>
         <div id="formModal" class="modal">
 
             <div class="modal-content">
-                <span class="close" onclick="closeform()">&times;</span>
+                <span class="close" onclick="closeModal()">&times;</span>
                 <form method='post' action="{% url 'reports' %}">
                     {% csrf_token %}
                     <label for="transactionid">Transaction Id:</label><br>
                     <input type="text" id="transactionid" name="transactionid"><br>
-                    Report type:<br>
+                        Report type:<br>
                     <input type="radio" id="false positive" name="report_status" value="false positive"><br>
                     <label for="false positive">False positive</label><br>
                     <input type="radio" id="false negative" name="report_status" value="false negative"><br>
@@ -65,10 +65,11 @@
                     <input type="submit" name="action" value="submit" >
                 </form>
             </div>
-        </div>
+        </div><div id="overlay"></div>
         
     </p>
-    <div id="title"> <h3>Reports</h3></div>
+</div>
+    
   {% if count %}
   <div class="card" style="background-color: #ffffff;">
     <table>
@@ -124,7 +125,7 @@
         {% endfor %}{% endif %}
     </ol>
     {% else %}
-    <P>no reports here</P>{% endif %}</div></div>
+    <P>no reports here</P>{% endif %}</div>
     <script src="{% static 'homepage.js' %}"></script>
     <script src="{% static 'report.js' %}"></script>
 </body>{% endblock %}
