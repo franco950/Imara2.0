@@ -15,8 +15,6 @@
 
         <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
-
-
             <div >
                 <button id="showCustomTimeBtn" type="button">Time View</button>Filtered values:{{general_stats.time_view}}<br>
                 <div id="custom-time-dropdown" style="display: none;">
@@ -53,28 +51,15 @@
                 {% endfor %}
             </div><br>
 
-            <!-- For Locations -->
-            <!-- <button id="showLocationsBtn" type="button">Locations view</button>
-            <div id="location-dropdown" style="display: none;">
-                {% for item in general_stats.locations %}
-                    <label>
-                        <input type="checkbox" name="locations" value="{{ item }}"> {{ item }}<br>
-                    </label>
-                {% endfor %}
-            </div> -->
-
             <button type="submit" value="submit">Filter</button>
         </form>
     </div>
 
-   
   <br>
 <script>
     // Pass the general_stats dictionary to JavaScript
     var generalStats = {{ general_stats|safe }};
 </script>
- 
-
 
 <div class="card cards1" style="background-color: #1565c0;">
   <h3>Transactions</h3>
@@ -108,10 +93,6 @@
     </div>
   </div>
 </div><br>
-<!-- <div class="card cards" style="background-color: #3498db;">
-  <h3>All reports</h3>
-  <p>{{general_stats.all_reports}}</p>
-</div><br> -->
 
 <div class="card pies"style="background-color: #fff;">
   <h3 >Approval</h3>
@@ -126,11 +107,9 @@
   <div class="card" id="barChart"></div>
 </div>
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
 <script src="{% static 'homepage.js' %}"></script>
 {% endblock %}
 
 {% include 'footer.html' %}
 </div>
 </body>
-

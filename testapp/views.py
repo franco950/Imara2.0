@@ -155,9 +155,9 @@ def locator(request):
         return HttpResponse(f'Error: {e}')
 
     return HttpResponse('User not logged in')     
+global_data={}
 
 
-    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transactions(request):
@@ -172,7 +172,7 @@ def transactions(request):
         # Process the data and save it to the database
         newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
         newentry.save()
-        if data.get('location') not in all_locations:
+        if data.get('location') not in all_stations:
             newentry.transaction_state='invalid location'
             newentry.save()
             return JsonResponse({"error":"invalid transaction location"})
@@ -183,6 +183,7 @@ def transactions(request):
                 
         try:
             done=prediction(reshaped_data)
+            
         except Exception as e:
             newentry.transaction_state='invalid data'
             newentry.save()
@@ -201,27 +202,28 @@ def transactions(request):
             mystaffid = userd.staffid
             new_entry = alert.objects.create( transactionid=newentry.transactionid,
                                                 staffid=mystaffid, alert_status='waiting')
+            
             new_entry.save()
             newentry.transaction_state='predicted'
             newentry.save()
-            
-        
+             
             # Respond with a JSON success message
         return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
                             'prediction':str(pred),'mode':'manual'})
-        
+
 
 @login_required
 def home(request):
+    
     user = request.user
     name=user.username
+    
     if user.is_authenticated:
         content={'set':name}
         message='Welcome to Imara.'
     
-
     filter_stations=locator(request).get('staff_stations')
-    filter_locations=locator(request).get('staff_locations')
+
     
     current_date = datetime.now()
     # Calculate the date 5 years ago
@@ -251,10 +253,13 @@ def home(request):
     false_positives=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions,report_status='false positive').count()
     false_negatives=report.objects.filter(report_status='false negative',timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
     general_stats={'all_transactions':all_transactions,'transactions_per_hour':list(data),'predicted_transactions':predicted,'pending_transactions':pending,'all_alerts':all_alerts,'approved':approved,
-        'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
-        'false_positives':false_positives,'false_negatives':false_negatives,'locations':locator(request).get('staff_locations'),'stations':locator(request).get('staff_stations'),'time_view':time_view}
+        'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,'false_positives':false_positives,
+        'false_negatives':false_negatives,'locations':locator(request).get('staff_locations'),'stations':locator(request).get('staff_stations'),'time_view':time_view}
     context={'content':content,'general_stats':general_stats}
-
+    filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+    global_data['new_alerts']=new_alerts
+    context['new_alerts']=new_alerts
 
     if request.method == 'POST':
         
@@ -267,9 +272,8 @@ def home(request):
         if len(filter_stations)==0:
         
             filter_stations=locator(request).get('staff_stations')
-        
+    
 
-        #filter_locations = request.POST.getlist('locations')
         filter_transactions = transaction.objects.filter(location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')]).values_list('transactionid',flat=True)
               
         all_transactions=transaction.objects.filter(timestamp__range=[custom_start_date, custom_end_date ],location__in=[loc for loc in filter_stations if loc in locator(request).get('staff_stations')]).count()
@@ -290,25 +294,34 @@ def home(request):
         all_reports=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions).count()
         false_positives=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date  ],transactionid__in=filter_transactions,report_status='false positive').count()
         false_negatives=report.objects.filter(report_status='false negative',timestamp__range=[custom_start_date, custom_end_date],transactionid__in=filter_transactions).count()
+        
         general_stats={'all_transactions':all_transactions,'transactions_per_hour':list(data),'predicted_transactions':predicted,'pending_transactions':pending,'all_alerts':all_alerts,'approved':approved,
             'rejected':rejected,'approval_rate':approval_rate,'waiting':waiting,'all_reports':all_reports,
             'false_positives':false_positives,'false_negatives':false_negatives,'locations': locator(request).get('staff_locations'),'stations': locator(request).get('staff_stations'),
             'filtered_stations':[loc for loc in filter_stations if loc in locator(request).get('staff_stations')],'time_view':time_view}
         context={'content':content,'general_stats':general_stats,'login':message}
+        filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+        new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+        global_data['new_alerts']=new_alerts
+        context['new_alerts']=new_alerts
+        
         return render(request, 'homepage.html',context)
     else:
         pass
+    
     return render(request, 'homepage.html',context)
 
   
 @login_required
 def alerts(request):
+
+   
     user = request.user
     name=user.username
     if user.is_authenticated:
         content={'set':name}
     staff_location=locator(request).get('staff_stations')
-    print(staff_location)
+    
    
     if request.method == 'POST':
 
@@ -337,6 +350,7 @@ def alerts(request):
     transactions = transaction.objects.filter(location__in=staff_location).values_list('transactionid',flat=True)
     alertpage=alert.objects.filter(alert_status='waiting',transactionid__in=transactions)
     count = alertpage.count()
+     
 
     if count>0:
         set_alert=f"Pending alerts:{count}"
@@ -345,7 +359,11 @@ def alerts(request):
     else:
         set_alert='No pending alerts'
         statement={'set':set_alert}
-    context={'set':alertpage,'content':content,'statement':statement}
+    context={'set':alertpage,'content':content,'statement':statement,'count':count}
+    filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+    global_data['new_alerts']=new_alerts
+    context['new_alerts']=new_alerts
     return render(request,'alertpage.html',context) 
 
 @api_view(['GET'])   
@@ -370,18 +388,39 @@ def feedback(request):
   
 @login_required
 def reports(request):
+
     user = request.user
     name=user.username
     if user.is_authenticated:
         content={'set':name}
+    
+    filter_new_reports=transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+    filter_reports=report.objects.filter(transactionid__in=filter_new_reports,verification='waiting')
+    entry_count = filter_reports.count()
+    current_date = datetime.now()
+    five_years_ago = current_date - timedelta(days=365 * 5)
+    custom_start_date = five_years_ago.strftime("%Y-%m-%d")
+    custom_end_date=current_date.strftime("%Y-%m-%d")
+    time_view=[custom_start_date,' to ',custom_end_date]
 
     if request.method == 'POST':
-        user=request.user
+        
+        
         action=request.POST.get('action')
         report_transactionid = request.POST.get('transactionid')
+        filter_reportid=request.POST.get('reportid')
+        report_staffid=request.POST.get('staffid')
         reportstatus = request.POST.get('report_status')
+        custom_start_date = request.POST.get('custom_start_date', '')
+        custom_end_date = request.POST.get('custom_end_date', '')
+        report_verification=request.POST.get('verification')
+        time_view=[custom_start_date,' to ',custom_end_date]
+
         if action=='submit':
-    
+            items=request.POST.get('item_value')
+            items=items.split(';')
+            reportid=items[0].split(':')
+            myreportid=reportid[1]
             new_entry = report.objects.create(transactionid=report_transactionid,
             staffid=user.staffid, report_status=reportstatus, verification='waiting')
             new_entry.save()
@@ -390,6 +429,30 @@ def reports(request):
                             category='false negative')
                     new_entry.save()
 
+        if action=='update':
+            items=request.POST.get('item_value')
+            items=items.split(';')
+            reportid=items[0].split(':')
+            myreportid=reportid[1]
+            selected=report.objects.get(reportid=myreportid)
+            transactionid=report_transactionid
+            staffid=report_staffid
+            report_status=reportstatus 
+            verification=report_verification
+            change={'transactionid':transactionid,'staffid':staffid,'report_status': report_status,'verification':verification}
+            for key, value in change.items():
+                if value is not None:
+                    setattr(selected, key, value)
+
+        if action=='verify':
+            items=request.POST.get('item_value')
+            items=items.split(';')
+            reportid=items[0].split(':')
+            myreportid=reportid[1]
+            selected=report.objects.get(reportid=myreportid)
+            selected.verification='approved'
+            selected.save()
+
         if action=='delete report':
             items=request.POST.get('item_value')
             items=items.split(';')
@@ -397,19 +460,34 @@ def reports(request):
             myreportid=reportid[1]
             delete = get_object_or_404(report, reportid=myreportid)
             delete.delete()
-    reportspage=report.objects.filter(verification='waiting')
-   
-    entry_count = reportspage.count()
-    if entry_count>0:
-        context={'set':reportspage,'content':content}
-    else:
-        context={'content':content}
-        return render(request, 'reportspage.html')
-            
+
+        if action=='filter':
+            filter_new_reports=transaction.objects.filter(
+                location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+            filter_reports=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date ],
+            report_status=reportstatus,transactionid=report_transactionid,transactionid__in=filter_new_reports,
+            reportid=filter_reportid,staffid=report_staffid,verification=report_verification)
+    
+    for all in filter_reports.values():
+        if all['verification']=='waiting':
+            waiting=True
+
+    context={'filter':filter_reports,'content':content,'count':entry_count,'waiting':waiting,'time_view':time_view}
+
+    filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+    global_data['new_alerts']=new_alerts
+    context['new_alerts']=new_alerts
+
+    if user.is_staff == True:
+        context['allowed']=True
+    
     return render(request, 'reportspage.html',context)
 
 @login_required
 def blacklists(request):
+ 
+    
     user = request.user
     name=user.username
     if user.is_authenticated:
@@ -432,11 +510,17 @@ def blacklists(request):
             mylistid=listid[1]
             delete = get_object_or_404(blacklist, blacklistid=mylistid)
             delete.delete()
+    filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+    global_data['new_alerts']=new_alerts
+    context['new_alerts']=new_alerts
     
     return render(request,'blacklist.html',context)
 
 @login_required
 def system(request):
+  
+    
     user = request.user
     name=user.username
     if user.is_authenticated:
@@ -479,7 +563,10 @@ def system(request):
 
             # Save the instance after making changes
             settings.save()
-
+    filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+    global_data['new_alerts']=new_alerts
+    content['new_alerts']=new_alerts
     return render(request, 'modelpage.html',content)
 
 @login_required

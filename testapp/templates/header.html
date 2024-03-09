@@ -23,7 +23,7 @@
         <ul>
     
             <li class="{% if request.path == 'home/' %}active{% endif %}"><a href="{% url 'home' %}">Dashboard</a></li>
-            <li class="{% if request.path == 'alerts/' %}active{% endif %}"><a href="{% url 'alerts' %}">Alerts</a></li>
+            <li class="{% if request.path == 'alerts/' %}active{% endif %}"><a href="{% url 'alerts' %}">Alerts{% if new_alerts %}<img id="alert" src="{% static 'alert-icon-1562.png' %}"><sup id="newalerts" >{{new_alerts}}</sup>{% endif %}</a></li>
             <li class="{% if request.path == 'reports/' %}active{% endif %}"><a href="{% url 'reports' %}">Reports</a></li>
             <li class="{% if request.path == 'blacklist/' %}active{% endif %}"><a href="{% url 'blacklist' %}">Blacklist</a></li>
             <!-- <li><a href="{% url 'guidelines' %}">Guidelines</a></li> -->
@@ -45,5 +45,14 @@
         <!-- Page content goes here -->
         {% block content %}{% endblock %}
     </div>
+    <script>
+        // Function to refresh the page
+        function refreshPage() {
+            location.reload();
+        }
+      
+        // Set an interval to call the refreshPage function every 5000 milliseconds (5 seconds)
+        setInterval(refreshPage, 110000);
+      </script>
 </body>
 </html>

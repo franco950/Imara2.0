@@ -1,9 +1,51 @@
-{% extends 'header.html' %}{% load static %}
-<link rel="stylesheet" href="{% static 'alerts.css' %}" >
-{% block content %}
+{% extends 'header.html' %}{% load static %}{% block content %}
+<link rel="stylesheet" href="{% static 'reports.css' %}" >
+
 <body>
     <div id="main">
+        <div id="page">
+        <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
+            {% csrf_token %}
 
+
+            <div >
+                <button id="showCustomTimeBtn" type="button">Time View</button>{% if time_view %}Filtered values:{{time_view}}{{endif}}<br>
+                <div id="custom-time-dropdown" style="display: none;">
+                    <label for="custom_start_date">Start Date:</label>
+                    <input type="date" id="custom_start_date" name="custom_start_date" value="2020-01-01">
+
+                    <label for="custom_end_date">End Date:</label>
+                    <input type="date" id="custom_end_date" name="custom_end_date" value="2034-12-31">
+
+                    <!-- Your time view options dropdown for custom time -->
+                    <label for="customTimeOptions">Custom Time View:</label>
+                    <select id="customTimeOptions" name="customTimeOptions">
+                        <option value="lastDay">Last Day</option>
+                        <option value="lastWeek">Last Week</option>
+                        <option value="lastMonth">Last Month</option>
+                        <option value="lastThreeMonths">Last Three Months</option>
+                        <option value="lastSixMonths">Last Six Months</option>
+                        <option value="lastYear">Last Year</option>
+                        <option value="allTime"  >All Time</option> 
+                    </select>
+
+                    <!-- Submit button for custom time selection -->
+                    <button id="customTimeSubmitBtn" type="button">Apply</button>
+                </div>
+            </div><br>
+
+            <!-- For Stations -->
+            <!-- <button id="showStationsBtn" type="button">Location view</button>Filtered values:{{general_stats.filtered_stations}}<br>
+            <div id="station-dropdown" style="display: none;">
+                {% for item in general_stats.stations %}
+                    <label>
+                        <input type="checkbox" name="stations" value="{{ item }}" selected> {{ item }}<br>
+                    </label>
+                {% endfor %}
+            </div><br> -->
+
+            <button type="submit" value="submit">Filter</button>
+        </form>
 
     <p>
         <button onclick=" openform()">Create report</button>
@@ -15,8 +57,6 @@
                     {% csrf_token %}
                     <label for="transactionid">Transaction Id:</label><br>
                     <input type="text" id="transactionid" name="transactionid"><br>
-                    <!-- <label for="staffid">Staff Id:</label><br>
-                    <input type="text" id="staffid" name="staffid"><br> -->
                     Report type:<br>
                     <input type="radio" id="false positive" name="report_status" value="false positive"><br>
                     <label for="false positive">False positive</label><br>
@@ -28,6 +68,44 @@
         </div>
         
     </p>
+    <div id="title"> <h3>Reports</h3></div>
+  {% if count %}
+  <div class="card" style="background-color: #ffffff;">
+    <table>
+        <thead>
+            <tr>
+                <th>Report Id</th>
+                <th>Transaction Id</th>
+                <th>Staff Id</th>
+                <th>Report Status</th>
+                <th>Timestamp</th>
+                {% if allowed %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for items in filter %}
+                <tr>
+                    <td>{{ items.reportid }}</td>
+                    <td>{{ items.transactionid }}</td>
+                    <td>{{ items.staffid }}</td>
+                    <td>{{ items.report_status}}</td>
+                    <td>{{ items.timestamp }}</td>
+                    {% if waiting %}
+                    {% if allowed %}
+                    <td>
+                        <form method="post" action="{% url 'reports' %}">
+                            <input type="hidden" name="item_value" value="{{ items }}">
+                            {% csrf_token %}
+                            <button type="submit" class="approve-btn" name="action" value="verify">Verify Report</button>
+                        </form>
+                    </td>{% endif %}{% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+  </div>{% endif %}
     <p>reports are:</p>
     {% if set %}
     <ol> {% for items in set %}
@@ -43,9 +121,10 @@
                 </form>
             </p>
         </li>
-        {% endfor %}
+        {% endfor %}{% endif %}
     </ol>
     {% else %}
-    <P>no reports here</P>{% endif %}</div>
+    <P>no reports here</P>{% endif %}</div></div>
+    <script src="{% static 'homepage.js' %}"></script>
     <script src="{% static 'report.js' %}"></script>
 </body>{% endblock %}
