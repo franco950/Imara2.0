@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from testapp.models import transaction,alert,report,blacklist,systemsettings,CustomUser
 import numpy as np
 import joblib 
+from django.urls import reverse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -19,6 +20,7 @@ import requests
 import os
 from datetime import datetime,timedelta
 from urllib.parse import unquote
+from django.views.decorators.cache import cache_control
 from django.db.models import Count, F, ExpressionWrapper, DateTimeField
 from django.db.models.functions import Extract
 
@@ -100,7 +102,10 @@ def prediction(data):
 tra=transaction.objects.filter(transaction_state='incoming')
 for alll in tra:
     try:
-        transaction_list= list(map(float, alll.transaction_data.split(',')))
+        newdata=alll['transaction_data'].split(',')
+        datas=newdata[:-2]
+        
+        transaction_list= list(map(float, datas))
         input_data = np.array(transaction_list)
         reshaped_data = input_data.reshape(1, -1)
     except:
@@ -113,24 +118,25 @@ for alll in tra:
         
     
     newid=alll.transactionid
-    if done==0:
-        pred='legitimate'
-        alll.transaction_state='predicted'
-        alll.save()
-        
-    elif done==1:
-        pred='fraud'
-        transactlocation=alll.location
-        try:
-            userd=CustomUser.objects.get(location=transactlocation, department='agent')
-            mystaffid = userd.staffid
-            new_entry = alert.objects.create( transactionid=alll.transactionid,
-                                            staffid=mystaffid, alert_status='waiting')
-            new_entry.save()
+    if done:
+        if done==0:
+            pred='legitimate'
             alll.transaction_state='predicted'
             alll.save()
-        except:
-            pass
+            
+        elif done==1:
+            pred='fraud'
+            transactlocation=alll.location
+            try:
+                userd=CustomUser.objects.get(location=transactlocation, department='agent')
+                mystaffid = userd.staffid
+                new_entry = alert.objects.create( transactionid=alll.transactionid,
+                                                staffid=mystaffid, alert_status='waiting')
+                new_entry.save()
+                alll.transaction_state='predicted'
+                alll.save()
+            except:
+                pass
 
 all_stations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
 all_locations=['Kiambu','Thika','Online']  
@@ -177,9 +183,13 @@ def transactions(request):
             newentry.save()
             return JsonResponse({"error":"invalid transaction location"})
 
-        transaction_list= list(map(float, newentry.transaction_data.split(',')))
+        newdata=newentry.transaction_data.split(',')
+        datas=newdata[:-2]
+        
+        transaction_list= list(map(float, datas))
         input_data = np.array(transaction_list)
         reshaped_data = input_data.reshape(1, -1)
+        
                 
         try:
             done=prediction(reshaped_data)
@@ -260,6 +270,8 @@ def home(request):
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
     global_data['new_alerts']=new_alerts
     context['new_alerts']=new_alerts
+    if user.is_staff == True:
+        context['allowed']=True
 
     if request.method == 'POST':
         
@@ -304,6 +316,8 @@ def home(request):
         new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
         global_data['new_alerts']=new_alerts
         context['new_alerts']=new_alerts
+        if user.is_staff == True:
+            context['allowed']=True
         
         return render(request, 'homepage.html',context)
     else:
@@ -321,6 +335,33 @@ def alerts(request):
     if user.is_authenticated:
         content={'set':name}
     staff_location=locator(request).get('staff_stations')
+    transaction_data_labels=[ '0','merchant','category','amt','last','gender','lat','long','city_pop','job','merch_lat',
+                             'merch_long','first','merchant_name']
+    traits={'amount':3,'last':4,'gender':5,'first':12,'merchant_name':13}
+    transactions = transaction.objects.filter(location__in=staff_location).values_list('transactionid',flat=True)
+    all=transaction.objects.filter(transactionid__in=transactions)
+    alertpage=alert.objects.filter(alert_status='waiting',transactionid__in=transactions)
+    count = alertpage.count()
+    if count>0:
+        set_alert=f"Pending alerts:{count}"
+        statement={'set':set_alert}
+            
+    else:
+        set_alert='No pending alerts'
+        statement={'set':set_alert}
+    def get_traits(transactid):
+        for data in all:
+            
+            datas=data.transaction_data.split(',')
+            print(datas)
+            gender=datas[5]
+            if gender==1:
+                answer='male'
+            else:
+                answer='female'
+
+            trait_list={'first name':datas[12],'gender':answer,'amount':datas[3],'merchant_name':datas[13]}
+            return trait_list
     
    
     if request.method == 'POST':
@@ -336,9 +377,9 @@ def alerts(request):
             
             alertchange.alert_status='rejected'
             alertchange.save()
-            new_entry = blacklist.objects.create(transactionid=alertchange.transactionid,
+            new_blacklist_entry = blacklist.objects.create(transactionid=alertchange.transactionid,
             category='true positive')
-            new_entry.save()
+            
 
         if action=='approve':
             alertchange.alert_status='approved'
@@ -346,24 +387,39 @@ def alerts(request):
             new_entry = report.objects.create(transactionid=alertchange.transactionid,
             staffid=alertchange.staffid, report_status='false positive',verification='waiting')
             new_entry.save()
-    
-    transactions = transaction.objects.filter(location__in=staff_location).values_list('transactionid',flat=True)
-    alertpage=alert.objects.filter(alert_status='waiting',transactionid__in=transactions)
-    count = alertpage.count()
-     
-
-    if count>0:
-        set_alert=f"Pending alerts:{count}"
-        statement={'set':set_alert}
+        if action=='traits':
             
-    else:
-        set_alert='No pending alerts'
-        statement={'set':set_alert}
+            customer_data=get_traits(alertchange.transactionid)
+            context={'set':alertpage,'content':content,'statement':statement,'count':count,'customer_data':customer_data}
+            filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+            new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+            global_data['new_alerts']=new_alerts
+            context['new_alerts']=new_alerts
+            
+
+
+            
+            if user.is_staff == True:
+                context['allowed']=True
+                
+            return render(request,'alertpage.html',context) 
+      
+            
+
+   
+
     context={'set':alertpage,'content':content,'statement':statement,'count':count}
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
     global_data['new_alerts']=new_alerts
     context['new_alerts']=new_alerts
+     
+
+
+    
+    if user.is_staff == True:
+        context['allowed']=True
+        
     return render(request,'alertpage.html',context) 
 
 @api_view(['GET'])   
@@ -486,9 +542,11 @@ def blacklists(request):
  
     
     user = request.user
+    
     name=user.username
     if user.is_authenticated:
         content={'set':name}
+    
 
     full_list=blacklist.objects.all()
 
@@ -511,6 +569,8 @@ def blacklists(request):
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
     global_data['new_alerts']=new_alerts
     context['new_alerts']=new_alerts
+    if user.is_staff == True:
+        context['allowed']=True
     
     return render(request,'blacklist.html',context)
 
@@ -564,6 +624,8 @@ def system(request):
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
     global_data['new_alerts']=new_alerts
     content['new_alerts']=new_alerts
+    if user.is_staff == True:
+        content['allowed']=True
     return render(request, 'modelpage.html',content)
 
 @login_required
@@ -572,9 +634,24 @@ def guidelines(request):
     name=user.username
     if user.is_authenticated:
         content={'set':name}
+        if user.is_staff == True:
+            content['allowed']=True
     return render(request,'guidelines.html',content)
+@login_required
+def adminpanel(request):
+    user = request.user
+    name=user.username
+    if user.is_authenticated:
+        content={'set':name}
+        if user.is_staff == True:
+            content['allowed']=True
+    return render(request,'users.html',content)
+
 
 def logout_view(request):
     logout(request)
+    login_url = reverse('login')  # 'login' is the name of the login URL pattern
+    response = redirect(login_url)
+    
    
-    return redirect(home)
+    return response

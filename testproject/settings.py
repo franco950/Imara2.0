@@ -31,6 +31,12 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'allauth',
+    'allauth.account',
+    'allauth_2fa',
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    
     'dbbackup',
     'login',
     'testapp', 
@@ -45,8 +51,12 @@ INSTALLED_APPS = [
 ]
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': 'database backups'}
-
+DBBACKUP_CLEANUP_KEEP = 7
+CRON_CLASSES = [
+    'django_cron.cron.FrequentCron',
+]
 MIDDLEWARE = [
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,6 +64,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    # 'testproject.middleware.AuthenticationMiddleware'
 ]
 
 ROOT_URLCONF = 'testproject.urls'
@@ -106,7 +118,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+AUTHENTICATION_BACKENDS = [
+    
+  
+    'allauth.account.auth_backends.AuthenticationBackend',
+    
+]
+ACCOUNT_2FA_ENABLED_METHODS = ['allauth_2fa.auth_methods.TOTP']
+ACCOUNT_2FA_METHOD_PROMPT = True
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 

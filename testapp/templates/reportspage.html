@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="{% static 'reports.css' %}" >
 
 <body>
-    <div id="main"><div id="title"> <h2>Reports</h2></div>
+    <div id="main"><div id="title"> <h2>Reports</h2> <button id="add" onclick=" openModal(event)">Create report</button></div>
         
         <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
@@ -48,7 +48,7 @@
         </form>
 
     <p>
-        <button onclick=" openModal(event)">Create report</button>
+       
         <div id="formModal" class="modal">
 
             <div class="modal-content">
@@ -58,9 +58,9 @@
                     <label for="transactionid">Transaction Id:</label><br>
                     <input type="text" id="transactionid" name="transactionid"><br>
                         Report type:<br>
-                    <input type="radio" id="false positive" name="report_status" value="false positive"><br>
+                    <input type="radio" id="false positive" name="report_status" value="false positive">
                     <label for="false positive">False positive</label><br>
-                    <input type="radio" id="false negative" name="report_status" value="false negative"><br>
+                    <input type="radio" id="false negative" name="report_status" value="false negative">
                     <label for="false negative">False negative</label><br>
                     <input type="submit" name="action" value="submit" >
                 </form>
@@ -99,33 +99,23 @@
                         <form method="post" action="{% url 'reports' %}">
                             <input type="hidden" name="item_value" value="{{ items }}">
                             {% csrf_token %}
+                           
                             <button type="submit" class="approve-btn" name="action" value="verify">Verify Report</button>
+                           
                         </form>
-                    </td>{% endif %}{% endif %}
+                    </td>
+                    {% endif %}{% endif %}
                 </tr>
             {% endfor %}
         </tbody>
     </table>
   </div>{% endif %}
-    <p>reports are:</p>
-    {% if set %}
-    <ol> {% for items in set %}
-        <li>
-            <p> 
-                <form method="post" action="{% url 'reports' %}">
-                    {{ items }}
-                    <input type="hidden"name="item_value" value="{{ items }}">
-                    {% csrf_token %}                   
-                    <button type=submit class="approve-btn" name="action" value="delete report" >Delete report
-                    </button>
-            
-                </form>
-            </p>
-        </li>
-        {% endfor %}{% endif %}
-    </ol>
-    {% else %}
-    <P>no reports here</P>{% endif %}</div>
+
+</div><div id="overlay"></div>
+  
+   
+{% endif %}
+   
     <script src="{% static 'homepage.js' %}"></script>
     <script src="{% static 'report.js' %}"></script>
 </body>{% endblock %}

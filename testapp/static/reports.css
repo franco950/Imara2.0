@@ -5,6 +5,7 @@
     padding: 10px;
     border: none;
     cursor: pointer;
+    border-radius: 8px;
 }
 .approve-btn {
     background-color: #a4a8dd;/*#a4a8dd;*/
@@ -12,6 +13,17 @@
     padding: 10px;
     border: none;
     cursor: pointer;
+    border-radius: 8px;
+}
+.approve-btn:hover {
+    color: #8a8484; 
+}
+#add{
+    background-color: #a4a8dd;
+    border-radius: 8px;
+    padding: 10px;
+    color: white;
+    margin:5px;
 }
 body{
    
@@ -25,12 +37,13 @@ body{
 }
 
 .modal {
+    
     top: 100px;
     display: none;
-   
+    
     position:fixed;
     z-index: 10000;
-    width: 700px;
+    width: 800px;
     height: 400px;
     overflow: auto;
     padding-top: 10px;
@@ -49,11 +62,13 @@ body{
     z-index: 1; /* Place the overlay above other elements */
 }
 .modal-content {
+    border: 1px solid #b8afaf;
+    border-radius:8px;
     background-color: #fff;
     margin: 5% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 60%;
 }
 
 .close {
@@ -135,7 +150,13 @@ tbody td {
     margin-right: 10px;
     margin-bottom: 10px; /* Adjust margin as needed for spacing */
 }
-
+tbody tr:hover {
+    background-color: #f0e8e8; 
+}
+#menudots{
+    height:20px;
+    width:20px;
+}
 
 
     

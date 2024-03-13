@@ -26,11 +26,12 @@
             <li class="{% if request.path == 'alerts/' %}active{% endif %}"><a href="{% url 'alerts' %}">Alerts{% if new_alerts %}<img id="alert" src="{% static 'alert-icon-1562.png' %}"><sup id="newalerts" >{{new_alerts}}</sup>{% endif %}</a></li>
             <li class="{% if request.path == 'reports/' %}active{% endif %}"><a href="{% url 'reports' %}">Reports</a></li>
             <li class="{% if request.path == 'blacklist/' %}active{% endif %}"><a href="{% url 'blacklist' %}">Blacklist</a></li>
-            <!-- <li><a href="{% url 'guidelines' %}">Guidelines</a></li> -->
-            <li class="{% if request.path == 'admin:index/' %}active{% endif %}"><a href="{% url 'admin:index' %}">Admin</a></li>
+            {% if allowed %}
+            <li class="{% if request.path == 'adminpanel/' %}active{% endif %}"><a href="{% url 'adminpanel' %}">Admin</a></li>{% endif %}
         </ul>
     </div>
-   
+  
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var currentPath = "{{ request.path }}"; // Get the current path from Django template

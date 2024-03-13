@@ -1,0 +1,182 @@
+
+.reject-btn {
+    background-color:#a41623;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
+    color:white;/* white;*/
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+}
+.approve-btn {
+    background-color: #a4a8dd;/*#a4a8dd;*/
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    margin:10px;
+}
+.approve-btn:hover {
+    color: #8a8484; 
+}
+#add{
+    background-color: #a4a8dd;
+    border-radius: 8px;
+    padding: 10px;
+    color: white;
+    margin:5px;
+}
+body{
+   
+    overflow: auto;
+    top:0;
+    left:0;
+    margin:0;
+    padding:0;
+    text-decoration: none;
+
+}
+
+.modal {
+    
+    top: 100px;
+    display: none;
+    
+    position:fixed;
+    z-index: 10000;
+    width: 800px;
+    height: 400px;
+    overflow: auto;
+    padding-top: 10px;
+   
+    background-size:1000px ;
+    opacity: 100%;
+}
+#overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Adjust the alpha channel for darkness */
+    z-index: 1; /* Place the overlay above other elements */
+}
+.modal-content {
+    border: 1px solid #b8afaf;
+    border-radius:8px;
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+#main {
+    height:100%;
+    width: 100%; 
+    background-color: #f0f0f0; 
+    margin: 0;
+    padding-bottom: 30px; 
+    font-family: 'Arial', sans-serif;
+}
+
+#title{
+    margin-left:30px;
+    padding:0;
+}
+#filter{
+    
+    background-color: #fff;
+    margin-left:30px;
+    padding-left:15px;
+
+}
+
+.card {
+
+    width:1050px;
+    background-position-x:fixed;
+    margin-left: 30px;
+    margin-right: 20px;
+    margin-top:0;
+    margin-bottom: 40px;
+    padding: 0;
+    padding:10px;
+    border: 1px solid #b8afaf;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    
+}
+#enforce{
+    margin-top:15px;
+    margin-left:0px;
+    margin-bottom:15px
+}
+#automate{
+    
+    
+    margin-left:0px;
+    margin-bottom:10px
+}
+#general{
+    margin-bottom:10px
+}
+label{
+    margin-top:10px;
+}
+select option {
+    padding: 15px; /* Adjust the value as needed */
+  }
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+thead th {
+
+    border-bottom: 2px solid #000; /* Dark line color */
+    text-align: left;
+}
+
+/* Add lighter lines below the table data rows */
+tbody td {
+    padding-left: 10px;
+    border-bottom: 1px solid #ccc; /* Light line color */
+}
+#time-view-dropdown {
+    display: inline-block;
+    margin-right: 10px; /* Adjust margin as needed for spacing */
+}
+#custom-time-dropdown {
+    
+    padding:10px;
+    border :10px;
+    margin: 10px;  /* Adjust margin as needed for spacing */
+}
+#showTimeViewBtn {
+    display: inline-block;
+    margin: 10px; /* Adjust margin as needed for spacing */
+}
+#showCustomTimeBtn {
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px; /* Adjust margin as needed for spacing */
+}
+tbody tr:hover {
+    background-color: #f0e8e8; 
+}
+#menudots{
+    height:20px;
+    width:20px;
+}
+
+
+    

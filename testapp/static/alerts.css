@@ -7,6 +7,108 @@
     cursor: pointer;
 
 }
+.itemCheckbox {
+    display: none;
+  }
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+
+.modal {
+    border-radius: 8px;
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+}
+
+/* Overlay styles */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
+
+#modalButtons{
+    position:fixed;
+    top: 130px;
+    left: 1080px;
+    width:100px;
+    height:100px;
+
+}
+
+/* Styles for the submit and close buttons */
+.modal-buttons button {
+    margin-right: 10px;
+}
+
+/* Styles for the success message pop-up */
+.success-popup {
+    border-radius: 8px;
+    display: none;
+    position: fixed;
+    margin:0;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding-top:0;
+    padding-bottom:0;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #ffffff;
+    color: #161414;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+
+}
+#delete{
+    border-top:10px;
+    border-radius: 8px;
+    background-color:#a41623;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
+    color:white;
+    width:70px;
+    height:30px;
+}
+#change{
+    border-radius: 8px;
+    background-color: #a4a8dd;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
+    color:white;
+}
+
+
+    
+
+#cards3 {
+    width:100px;
+    
+    margin-left: 30px;
+    margin-right: 20px;
+    margin-top:0;
+    margin-bottom: 40px;
+    padding: 0;
+    padding:10px;
+    border: 1px solid #b8afaf;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    
+}
+
 .reject-btn:hover {
     color: #8a8484; 
 }
@@ -31,27 +133,24 @@ body{
 
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(26, 35, 126, 0.4); /* Dark Blue with some transparency */
-    padding-top: 60px;
-}
 
+
+#myModal{
+    position: fixed;
+    top:390px;
+    left:900px;
+
+}
 .modal-content {
+    position: relative;
+    width: 200px;
+    height: 200px;
     background-color: #fff;
     margin: 5% auto;
     padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
+    border: 1px solid #b8afaf;
+    border-radius: 8px;
 }
-
 .close {
     color: #aaa;
     float: right;

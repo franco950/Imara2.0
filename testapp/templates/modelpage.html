@@ -1,8 +1,10 @@
-<!DOCTYPE html>
-<html>
+{% extends 'header.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'model.css' %}" >
 <body>
-  {% include 'header.html' %}
-  <p></p>
+ 
+  <div id="main"><div class="card">
   <h2>System Settings</h2>
   <p>
     <form id="SettingsForm" method="post">
@@ -10,11 +12,11 @@
       
       <label for="settings_class">Settings class:</label>
       <select id="settings_class" name="name">
-        <option value="settings class" selected>General</option>
-        <option value="settings class">Specific</option>
+        <option value="settings class" id="general" selected>General</option>
+        <!-- <option value="settings class">Specific</option> -->
       </select><br>
 
-      <label for="station">Stations:</label><br>
+      <!-- <label for="station">Stations:</label><br>
       <input type="checkbox" name="station" value="all" selected>All<br>
       <input type="checkbox" name="station" value="Thika01">Thika01<br>
       <input type="checkbox" name="station" value="Thika02">Thika02<br>
@@ -22,16 +24,16 @@
       <input type="checkbox" name="station" value="Kiambu02">Kiambu02<br>
       <input type="checkbox" name="station" value="Online01">Online01<br>
       <input type="checkbox" name="station" value="Online02">Online02<br>
-      <br>
+      <br> -->
 
-      <label for="location">Locations:</label><br>
+      <!-- <label for="location">Locations:</label><br>
       <input type="checkbox" name="location" value="all" selected>All<br>
       <input type="checkbox" name="location" value="Thika">Thika<br>
       <input type="checkbox" name="location" value="Kiambu">Kiambu<br>
       <input type="checkbox" name="location" value="Online">Online<br>
-     
+      -->
 
-      <label for="automate">Automate:</label><br>
+      <label for="automate " id="automate" >Automate:</label><br>
       <select id="automate" name="name">
         <option value="automate all">Automate all</option>
         <option value="automate by station">Automate by station</option>
@@ -40,7 +42,7 @@
       </select>
       <br>
 
-      <input type="checkbox" name="enforce" value="enforce">Enforce Blacklist<br>
+      <input type="checkbox" id="enforce" name="enforce" value="enforce">Enforce Blacklist<br>
 
       <label for="blacklist">Add to blacklist:</label><br>
       <input type="checkbox" name="blacklist_add" value="rejected alerts" selected>Add rejected alerts automatically<br>
@@ -56,8 +58,8 @@
       </select>
       <br>
 
-      <button type="submit">Save Settings</button>
+      <button type="submit" class="approve-btn" >Save Settings</button>
     </form>
-  </p>
+  </p></div></div>
 </body>
-</html>
+{% endblock %}

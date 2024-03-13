@@ -9,6 +9,7 @@
 						<h2>SIGN IN</h2>
                         {% csrf_token %}
                         {{ form }}
+
 						<button type="submit" class="submit">LOG IN</button>
 					</form>
 					<a href="{% url 'password_reset' %}">forgot password</a>
