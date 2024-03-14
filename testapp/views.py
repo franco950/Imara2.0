@@ -350,18 +350,19 @@ def alerts(request):
         set_alert='No pending alerts'
         statement={'set':set_alert}
     def get_traits(transactid):
-        for data in all:
+        all=transaction.objects.get(transactionid=transactid)
+        
             
-            datas=data.transaction_data.split(',')
-            print(datas)
-            gender=datas[5]
-            if gender==1:
-                answer='male'
-            else:
-                answer='female'
+        datas=all.transaction_data.split(',')
+        print(datas)
+        gender=datas[5]
+        if gender==1:
+            answer='male'
+        else:
+            answer='female'
 
-            trait_list={'first name':datas[12],'gender':answer,'amount':datas[3],'merchant_name':datas[13]}
-            return trait_list
+        trait_list={'first name':datas[12],'gender':answer,'amount':datas[3],'merchant_name':datas[13]}
+        return trait_list
     
    
     if request.method == 'POST':
@@ -371,9 +372,10 @@ def alerts(request):
         items=items.split(';')
         alertid=items[0].split(':')
         myalertid=alertid[1]
-        alertchange=alert.objects.get(alertid=myalertid)  
+         
 
         if action=='reject':
+            alertchange=alert.objects.get(alertid=myalertid)
             
             alertchange.alert_status='rejected'
             alertchange.save()
@@ -382,12 +384,15 @@ def alerts(request):
             
 
         if action=='approve':
+            alertchange=alert.objects.get(alertid=myalertid)
             alertchange.alert_status='approved'
             alertchange.save()
             new_entry = report.objects.create(transactionid=alertchange.transactionid,
             staffid=alertchange.staffid, report_status='false positive',verification='waiting')
             new_entry.save()
         if action=='traits':
+            alertchange=alert.objects.get(alertid=myalertid)
+            print('yaaaaay')
             
             customer_data=get_traits(alertchange.transactionid)
             context={'set':alertpage,'content':content,'statement':statement,'count':count,'customer_data':customer_data}
@@ -524,6 +529,8 @@ def reports(request):
     for all in filter_reports.values():
         if all['verification']=='waiting':
             waiting=True
+        else:
+            waiting=0
 
     context={'filter':filter_reports,'content':content,'count':entry_count,'waiting':waiting,'time_view':time_view}
 
@@ -645,6 +652,8 @@ def adminpanel(request):
         content={'set':name}
         if user.is_staff == True:
             content['allowed']=True
+        userlist=CustomUser.objects.all()
+        content['list']=userlist
     return render(request,'users.html',content)
 
 

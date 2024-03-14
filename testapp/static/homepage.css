@@ -10,6 +10,7 @@ html {
     padding: 0;
 }
 .card.cards {
+    user-select: none;
     
     width: 200px;
     height: 200px;
@@ -23,6 +24,7 @@ html {
     transition: box-shadow 0.3s ease; /* Add a transition for a smoother effect on hover */
 } 
 .card.cards1 {
+    user-select: none;
     width: 400px; /* Adjusted width to accommodate the additional content */
     height: 150px;
     padding: 15px;
@@ -36,6 +38,7 @@ html {
     position: relative; /* Added position: relative to act as a reference for absolute positioning */
 }
 .card.cards2 {
+    user-select: none;
     width: 490px; /* Adjusted width to accommodate the additional content */
     height: 150px;
     padding: 15px;
@@ -60,6 +63,7 @@ html {
     padding: 0 10px;
 }
 .card.pies {
+    user-select: none;
     width: 200px;
     height: 350px;
     padding: 13px;
@@ -72,6 +76,7 @@ html {
     transition: box-shadow 0.3s ease; /* Add a transition for a smoother effect on hover */
 }
 .card.pies2 {
+    user-select: none;
     width: 540px;
     height: 365px;
     padding: 15px;

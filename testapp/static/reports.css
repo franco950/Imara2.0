@@ -100,6 +100,7 @@ body{
 
 .card {
 
+    user-select: none;
     width:1050px;
     background-position-x:fixed;
     margin-left: 30px;
@@ -128,6 +129,7 @@ thead th {
 
 /* Add lighter lines below the table data rows */
 tbody td {
+    
     padding-left: 10px;
     border-bottom: 1px solid #ccc; /* Light line color */
 }
@@ -151,7 +153,7 @@ tbody td {
     margin-bottom: 10px; /* Adjust margin as needed for spacing */
 }
 tbody tr:hover {
-    background-color: #f0e8e8; 
+    background-color: #afd1ec; 
 }
 #menudots{
     height:20px;

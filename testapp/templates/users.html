@@ -12,25 +12,38 @@
     </div>
     <div id="main">
         <div id="title">
-            <h3>Blacklist</h3>
-           
+            <h3>Users</h3>
+            <button id="add" onclick=" openForm(event)">Add user</button> 
         </div>
-        <button onclick=" openForm(event)">Add to blacklist</button>
+        
         <div id="formModal" class="modal">
 
             <div class="modal-content">
                 <span class="close" onclick="closeForm()">&times;</span>
                 <form method='post' action="{% url 'reports' %}">
                     {% csrf_token %}
-                    <label for="transactionid">Transaction Id:</label><br>
+                    <label for="transactionid">Staff Id:</label><br>
                     <input type="text" id="transactionid" name="transactionid"><br>
-                        Category:<br>
-                    <input type="radio" id="false positive" name="report_status" value="false positive">
-                    <label for="false positive">False positive</label><br>
+                        Roles:<br>
+                        <label for="customTimeOptions">Department:</label>
+                        <select id="customTimeOptions" name="customTimeOptions">
+                            <option value="lastDay">Agent </option>
+                            <option value="lastWeek">Manager</option>
+                            <option value="lastMonth">Support Staff</option>
+                           
+                        </select><br>
+                        <label for="customTimeOptions">Location:</label>
+                        <select id="customTimeOptions" name="customTimeOptions">
+                            <option value="lastDay">Kiambu </option>
+                            <option value="lastYear">Thika</option>
+                            <option value="lastMonth">Online</option>
+                           
+                          
+                           
+                            
+                        </select><br>
                     <input type="radio" id="false negative" name="report_status" value="false negative">
-                    <label for="false negative">False negative</label><br>
-                    <input type="radio" id="false negative" name="report_status" value="false negative">
-                    <label for="false negative">New Addition</label><br>
+                    <label for="false negative">Is active</label><br>
                     <input type="submit" name="action" value="submit" >
                 </form>
             </div></div>
@@ -46,13 +59,12 @@
             <table id="myTable">
                 <thead>
                     <tr>
-                        <th>Blacklist Id</th>
-                        <th>Transaction Id</th>
-                        <th>Category</th>
-                        <!-- <th>Actions</th> -->
-                        <th>
-                            Selected<input type="checkbox" id="selectAllCheckbox">
-                        </th>
+                        <th>Staff Id</th>
+                        <th>Department</th>
+                        <th>Location</th>
+                        
+                        
+                        
                         <th>
                             <div id="modalButtonsContainer" style="display: none;">
                                 <a href="#" id="showModalButtonsLink"><img src="{% static 'options_13525834.png' %}"id= 'menudots'></a>
@@ -63,11 +75,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for items in set %}
+                    {% for items in list %}
                         <tr>
-                            <td>{{ items.blacklistid }}</td>
-                            <td>{{ items.transactionid }}</td>
-                            <td>{{ items.category }}</td>
+                            <td>{{ items.staffid }}</td>
+                            <td>{{ items.department }}</td>
+                            <td>{{ items.location}}</td>
                             <!-- <td>
                                 <form method="post" action="{% url 'blacklist' %}">
                                     <input type="hidden" name="item_value" value="{{ items }}">

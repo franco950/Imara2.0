@@ -94,6 +94,7 @@
     
 
 #cards3 {
+    user-select: none;
     width:100px;
     
     margin-left: 30px;
@@ -143,7 +144,7 @@ body{
 }
 .modal-content {
     position: relative;
-    width: 200px;
+    width: 500px;
     height: 200px;
     background-color: #fff;
     margin: 5% auto;
@@ -178,7 +179,7 @@ body{
     background-position-x:fixed;
     margin-left: 30px;
     margin-right: 20px;
-    margin-top:0;
+    user-select: none;
     margin-bottom: 40px;
     padding: 0;
     padding:10px;
@@ -187,6 +188,7 @@ body{
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     
 }
+
 
 table {
     border-collapse: collapse;
@@ -207,7 +209,7 @@ tbody td {
     border-bottom: 1px solid #ccc; /* Light line color */
 }
 tbody tr:hover {
-    background-color: #f0e8e8; 
+    background-color: #afd1ec; 
 }
 
 #menudots{

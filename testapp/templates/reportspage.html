@@ -9,7 +9,7 @@
 
 
             <div id="filter" class="card " ><h3>Filter Reports</h3>
-                <button id="showCustomTimeBtn" type="button">Time View</button>{% if time_view %}Filtered values:{{time_view}}{{endif}}<br>
+                <button id="showCustomTimeBtn" type="button">Filter by</button>{% if time_view %}Filtered values:{{time_view}}{{endif}}<br>
                 <div id="custom-time-dropdown" style="display: none;">
                     <label for="custom_start_date">Start Date:</label>
                     <input type="date" id="custom_start_date" name="custom_start_date" value="2020-01-01">
@@ -44,7 +44,7 @@
                 {% endfor %}
             </div><br> -->
 
-            <button type="submit" value="submit">Filter</button>
+            <button type="submit" class="approve-btn" value="submit">Apply</button>
         </form>
 
     <p>
