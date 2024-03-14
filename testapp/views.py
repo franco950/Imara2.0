@@ -66,7 +66,7 @@ def extract_filename(content_disposition):
 
 def request_joblib_file():
     client=APIClient()
-    joblib_url = 'http://127.0.0.1:8001/download'  # Replace with the actual URL for the joblib file
+    joblib_url = 'http://127.0.0.1:8001/download'
     joblib_response = requests.get(joblib_url)
 
     if joblib_response.status_code == 200:
@@ -75,7 +75,7 @@ def request_joblib_file():
         filename = extract_filename(content_disposition)
          
         if filename:
-            # Save the joblib file locally or process it as needed
+           
             with open(f'testapp\\joblib models\\{filename}', 'wb') as f:
                 f.write(joblib_response.content)
             print("Joblib file downloaded successfully.")
@@ -86,7 +86,7 @@ def request_joblib_file():
         print(f"Failed to download joblib file with status code: {joblib_response.status_code}")
 
 
-# Make the API call
+
 try:
     getversion()
 except Exception:
@@ -172,10 +172,10 @@ def transactions(request):
         try:
             data = json.loads(request.body.decode('utf-8'))
         except json.JSONDecodeError:
-            # Handle invalid JSON in the request
+            
             return JsonResponse({'error': 'Invalid JSON in the request'}, status=400)
             
-        # Process the data and save it to the database
+        
         newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
         newentry.save()
         if data.get('location') not in all_stations:
@@ -217,7 +217,7 @@ def transactions(request):
             newentry.transaction_state='predicted'
             newentry.save()
              
-            # Respond with a JSON success message
+          
         return JsonResponse({'message': 'Data received successfully','transaction id' :str(newid),
                             'prediction':str(pred),'mode':'manual'})
 
@@ -236,7 +236,7 @@ def home(request):
 
     
     current_date = datetime.now()
-    # Calculate the date 5 years ago
+
     five_years_ago = current_date - timedelta(days=365 * 5)
     custom_start_date = five_years_ago.strftime("%Y-%m-%d")
     custom_end_date=current_date.strftime("%Y-%m-%d")
@@ -435,7 +435,7 @@ def feedback(request):
             data = json.loads(request.body.decode('utf-8'))
             identity=data.get('transaction id')
         except json.JSONDecodeError:
-            # Handle invalid JSON in the request
+          
             return JsonResponse({'error': 'Invalid JSON in the request'}, status=400)
         try:
             alertreturn=alert.objects.get(transactionid=identity)
@@ -603,14 +603,14 @@ def system(request):
                 settings, created = systemsettings.objects.get_or_create(settings_class='specific')
 
         else:
-            # Retrieve the existing settings or create a new instance if it doesn't exist
+           
             settings, created = systemsettings.objects.get_or_create(settings_class='general')
 
             if name == 'location':
                 locations = request.POST.get('location')
                 settings.locations = locations
             elif name == 'station':
-                stations = request.POST.getlist('station')  # Get a list of selected stations
+                stations = request.POST.getlist('station') 
                 settings.stations = ",".join(stations)
             elif name == 'automate':
                 automate = request.POST.get('automate')
@@ -619,13 +619,13 @@ def system(request):
                 enforce = request.POST.get('enforce')
                 settings.enforce_blacklist = True if enforce == 'enforce' else False
             elif name == 'blacklist_add':
-                blacklist_add = request.POST.getlist('blacklist_add')  # Get a list of selected items
+                blacklist_add = request.POST.getlist('blacklist_add') 
                 settings.blacklist_add = ",".join(blacklist_add)
             elif name == 'report_add':
                 report_add = request.POST.get('reports')
                 settings.report_add = report_add
 
-            # Save the instance after making changes
+       
             settings.save()
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
@@ -659,7 +659,7 @@ def adminpanel(request):
 
 def logout_view(request):
     logout(request)
-    login_url = reverse('login')  # 'login' is the name of the login URL pattern
+    login_url = reverse('login')  
     response = redirect(login_url)
     
    

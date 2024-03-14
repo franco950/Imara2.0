@@ -78,16 +78,16 @@
    
     <div class="modal" id="contactInfoModal">
         <div class="modal-content" id="contactInfoModalContent">
-            <!-- Customer data will be dynamically populated here -->
+           
         </div>
         <button class="modal-option" data-action="closeModal" onclick="closeContactInfoModal()">Close</button>
     </div>
     <div class="overlay" id="overlay" onclick="closeContactInfoModal()"></div>
 
-    <!-- Delete Modal Overlay -->
+   
     <div class="overlay" id="deleteModalOverlay" onclick="closeDeleteModal()"></div>
 
-    <!-- Success message pop-up -->
+    
     <div class="success-popup" id="successPopup">
         <p>Done!</p>
     </div>
@@ -143,7 +143,6 @@
             const modalButtonsContainer = document.getElementById("modalButtonsContainer");
             const modalButtons = document.getElementById("modalButtons");
 
-            // Toggle visibility of the modal buttons
             modalButtons.style.display = (modalButtons.style.display === "none" || modalButtons.style.display === "") ? "block" : "none";
         });
 
@@ -154,12 +153,11 @@
             });
         });
 
-        // Function to toggle the visibility of the "Show Modal Buttons" link
         function toggleShowModalButtonsLink() {
             const modalButtonsContainer = document.getElementById("modalButtonsContainer");
             const anyCheckboxChecked = Array.from(itemCheckboxes).some((checkbox) => checkbox.checked);
 
-            // Toggle visibility based on whether any checkbox is checked
+          
             modalButtonsContainer.style.display = anyCheckboxChecked ? "block" : "none";
         }
 
@@ -168,7 +166,6 @@
             const overlay = document.getElementById("deleteModalOverlay");
             const modalContent = document.getElementById("deleteModalContent");
 
-            // Open the delete confirmation modal
             if (action === 'delete') {
                 modal.style.display = "block";
                 overlay.style.display = "block";
@@ -184,7 +181,7 @@
         }
 
         function handleDeleteConfirm() {
-            // Handle delete functionality here
+          
             closeDeleteModal();
             showSuccessPopup();
         }

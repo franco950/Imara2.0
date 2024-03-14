@@ -86,17 +86,17 @@
             </table>
         </div>
 
-        <!-- Overlay -->
+       
         <div class="overlay" id="overlay" onclick="closeModal()"></div>
 
-        <!-- Success message pop-up -->
+       
         <div class="success-popup" id="successPopup">
             <p>  Done !</p>
         </div>
     </div>
 
     <script>
-         // Global variable to store the current state/modal
+        
         let currentState = 'mainChange';
 
         function openModal(action) {
@@ -104,7 +104,7 @@
             const overlay = document.getElementById("overlay");
             const modalContent = document.getElementById("modalContent");
 
-        // Set the current state/modal
+        
         currentState = action;
 
         if (action === 'change') {
@@ -152,7 +152,7 @@
     button.textContent = text;
     button.classList.add("modal-option");
 
-    // Add specific class based on the action
+   
     if (action === 'applyChange' || action === 'applyTransactionId' || action === 'applyCategory') {
         button.classList.add("apply-button");
     } else if (action === 'backChange' || action === 'mainChange') {
@@ -172,7 +172,7 @@
     if (button.getAttribute("data-action") === "transactionId") {
     modalContent.innerHTML = '<label for="transactionId">Enter ID:</label>' +
         '<input type="text" id="transactionId" placeholder="Enter ID">' +
-        '<br>'; // Add a line break
+        '<br>'; 
     const applyButton = createModalOptionButton('Apply', 'applyTransactionId');
     const backButton = createModalOptionButton('Back', 'mainChange');
     modalContent.appendChild(applyButton);
@@ -194,9 +194,9 @@
 
 
     } else if (button.getAttribute("data-action") === "mainChange") {
-        // Handle going back to the main "Change" modal
+       
         modalContent.innerHTML = 'Select Change Option:' +
-        '<br>'; // Add a line break;
+        '<br>'; 
         modalContent.appendChild(createModalOptionButton('Transaction  ID ', 'transactionId'));
         modalContent.appendChild(createModalOptionButton('Category', 'category'));
         const applyButton = createModalOptionButton('Apply', 'applyChange');
@@ -263,11 +263,11 @@
         const modalButtonsContainer = document.getElementById("modalButtonsContainer");
         const modalButtons = document.getElementById("modalButtons");
 
-        // Toggle visibility of the modal buttons
+        
         modalButtons.style.display = (modalButtons.style.display === "none" || modalButtons.style.display === "") ? "block" : "none";
     });
 
-    // Add an event listener to each checkbox to toggle the "Show Modal Buttons" link
+   
     const itemCheckboxes = document.querySelectorAll(".itemCheckbox");
     itemCheckboxes.forEach((checkbox) => {
         checkbox.addEventListener("change", function () {
@@ -275,12 +275,12 @@
         });
     });
 
-    // Function to toggle the visibility of the "Show Modal Buttons" link
+    
     function toggleShowModalButtonsLink() {
         const modalButtonsContainer = document.getElementById("modalButtonsContainer");
         const anyCheckboxChecked = Array.from(itemCheckboxes).some((checkbox) => checkbox.checked);
 
-        // Toggle visibility based on whether any checkbox is checked
+       
         modalButtonsContainer.style.display = anyCheckboxChecked ? "block" : "none";
     }
     </script>
