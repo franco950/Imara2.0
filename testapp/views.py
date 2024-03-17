@@ -539,31 +539,38 @@ def blacklists(request):
         action=request.POST.get('action')
         if action=='Add':
             transactionid=request.POST.get('transactionid')
-
             category=request.POST.get('category')
             list=[]
             x=transaction.objects.all().values_list('transactionid',flat=True)
             for all in x:
                 list.append(all)
-        
             if int(transactionid) in list:
-            
                 try:
                     new_entry=blacklist.objects.create(transactionid=transactionid,category=category)
                     context['success']='Entry added successfully'
-                    return render(request,'blacklist.html',context)
+                    
                 except Exception as e:
                     if 'NOT NULL constraint failed: testapp_blacklist.category' in str(e):
                         context['warning']='Please fill all fields'
             else:
                 context['warning']='The transaction id is not found in the transactions database'
-        
-        if action=='remove':
+        if action=='change':
+            try:
+                items=request.POST.get('item_value')
+                print(items)
+                changes =blacklist.objects.get( blacklistid=items)
+                cat=request.POST.get('category')
+                print(cat)
+                changes.category=cat
+                changes.save()
+
+
+            except Exception as e:
+                if 'No blacklist matches the given query.' in str(e):
+                    pass
+        if action=='delete':
             items=request.POST.get('item_value')
-            items=items.split(';')
-            listid=items[0].split(':')
-            mylistid=listid[1]
-            delete = get_object_or_404(blacklist, blacklistid=mylistid)
+            delete = get_object_or_404(blacklist, blacklistid=items)
             delete.delete()
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
@@ -757,8 +764,11 @@ def adminpanel(request):
             #         context['error']=e
         if action=='delete':
             item=request.POST.get('item_value')
-            entry=CustomUser.objects.get(staffid=item)
-            entry.delete()
+            try:
+                entry=CustomUser.objects.get(staffid=item)
+                entry.delete()
+            except:
+                pass
                 
             
     

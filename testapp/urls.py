@@ -9,7 +9,7 @@ urlpatterns=[
     path('alerts/',views.alerts,name='alerts'),
     path('feedback',views.feedback,name='feedback'),
     path('reports/',views.reports,name='reports'),
-    path('blacklist/',views.blacklists,name='blacklist'),
+    path('blacklists/',views.blacklists,name='blacklists'),
     path('model/',views.system,name='model'),
     path('logout/', views.logout_view, name='logout')
 ]

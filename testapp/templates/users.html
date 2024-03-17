@@ -94,7 +94,7 @@
                        
                          {% if administrator %}  <td>
                             <button id="change" onclick=" openModal('changes')">Change user</button></td>
-                            <div id="change" class="modal"style='color:black; width:300px;' >
+                            <div id="changes" class="modal"style='color:black; width:300px;' >
                                 <form method='post' action="{% url 'adminpanel' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="item_value" value='{{ items.staffid }}'>

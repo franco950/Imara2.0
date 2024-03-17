@@ -133,8 +133,10 @@ body{
     margin-left:15px;
     background-color:#ee3040;
     border-radius: 8px;
+    padding:8px;
 }
 #change{
+    padding:8px;
     border-radius: 8px;
     background-color: #a4a8dd;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
     color:white;
