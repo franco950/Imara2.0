@@ -10,11 +10,11 @@ function closeForm() {
 } 
 function openModal() {
     event.preventDefault(); 
-    document.getElementById("changes").style.display = "block";
+    document.getElementById("change").style.display = "block";
     document.getElementById("overlay").style.display = "block";
 }
 
 function closeModal() {
-    document.getElementById("changes").style.display = "none";
+    document.getElementById("change").style.display = "none";
     document.getElementById("overlay").style.display = "none";
 } 

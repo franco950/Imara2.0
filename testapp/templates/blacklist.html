@@ -4,22 +4,15 @@
 <link rel="stylesheet" href="{% static 'blacklist.css' %}" >
 
 <body>
-    <div id="modalButtons" style="display: none;">
-        <div class="card " id="cards3" >
-            <button class="modal-btn" id="change" data-action="change" onclick="openModal('change')">Change</button>
-            <button class="modal-btn" id="delete" data-action="delete" onclick="openModal('delete')">Delete</button>
-        </div>
-    </div>
+   
     <div id="main">
         <div id="title">
             <h3>Blacklist</h3> 
+            <button id="add" onclick=" openForm('formModal')">Add to blacklist</button>
             {% if warning %}<p style="color: red;">{{warning}}</p>{% endif %}
             {% if success %}<p style="color: green;">{{success}}</p>{% endif %}
             {% if error %}<p style="color: red;">{{error}}</p>{% endif %}
-            <button id="add" onclick=" openForm(event)">Add to blacklist</button>
-           
         </div>
-       
         <div id="formModal" class="modal">
 
             <div class="modal-content">
@@ -28,14 +21,14 @@
                     {% csrf_token %}
                   
                     <label for="transactionid" id="labela" ><b>Transaction Id:</b></label><br>
-                    <input type="number" id="transactionid" name="transactionid"><br>
+                    <input type="number" id="transactionid" name="transactionid"required><br>
                         <b>Category:</b><br>
-                    <input type="radio" id="true positive" name="report_status" value="true positive">
+                    <input type="radio" id="true positive" name="category" value="true positive">
                     <label for="true positive">True positive</label><br>
-                    <input type="radio" id="false negative" name="report_status" value="false negative">
+                    <input type="radio" id="false negative" name="category" value="false negative">
                     <label for="false negative">False negative</label><br>
                     
-                    <input type="submit" id="black" name="action" value="submit" >
+                    <input type="submit" id="black" name="action" value="Add" >
                 </form>
             </div></div>
        
@@ -53,17 +46,9 @@
                         <th>Blacklist Id</th>
                         <th>Transaction Id</th>
                         <th>Category</th>
-                        <!-- <th>Actions</th> -->
-                        <th>
-                            Selected<input type="checkbox" id="selectAllCheckbox">
+                         <th>Actions</th>
+                         <th>
                         </th>
-                        <th>
-                            <div id="modalButtonsContainer" style="display: none;">
-                                <a href="#" id="showModalButtonsLink"><img src="{% static 'options_13525834.png' %}"id= 'menudots'></a>
-                            </div>
-                        </th>
-
-                      
                     </tr>
                 </thead>
                 <tbody>
@@ -72,18 +57,28 @@
                             <td>{{ items.blacklistid }}</td>
                             <td>{{ items.transactionid }}</td>
                             <td>{{ items.category }}</td>
-                            <!-- <td>
-                                <form method="post" action="{% url 'blacklist' %}">
-                                    <input type="hidden" name="item_value" value="{{ items }}">
+                            {% if administrator %}<td><td>
+                                <button id="change" onclick=" openModal('change')">Change Entry</button></td> 
+                                <div id="change" class="modal"style="display: none;">
+                                <form method='post' action="{% url 'blacklist' %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="approve-btn" name="action" value="approve">Change</button>
-                                    <button type="submit" class="reject-btn" name="action" value="reject">Delete</button>
-                                </form>
-                            </td> -->
-                            <td>
-                                <input type="checkbox" class="itemCheckbox" data-item-id="{{ items.blacklistid }}">
-                            </td>
-                            
+                                    <input type="hidden"  name="item_value" value='{{ items.blacklistid }}'>
+                                  
+                                    <label for="transactionid" id="labela" ><b>Transaction Id:</b></label><br>
+                                    <input type="number" id="transactionid" name="transactionid"required><br>
+                                        <b>Category:</b><br>
+                                    <input type="radio" id="true positive" name="category" value="true positive">
+                                    <label for="true positive">True positive</label><br>
+                                    <input type="radio" id="false negative" name="category" value="false negative">
+                                    <label for="false negative">False negative</label><br>
+                                    
+                                    <input type="submit" id="black" name="action" value="Change" >
+                                </form></div></td>
+                                <td>
+                                    <form method="post" action="{% url 'blacklist' %}">{% csrf_token %}
+                                        <input type="hidden" id="deleteUserId" name="item_value" value='{{ items.blacklistid }}'>
+                                    <button type="submit"id='delete' name="action" value="delete"  >Delete Entry</form></td> 
+                                        {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -99,195 +94,7 @@
         </div>
     </div>
 
-    <script>
-        
-        let currentState = 'mainChange';
-
-        function openModal(action) {
-            const modal = document.getElementById("myModal");
-            const overlay = document.getElementById("overlay");
-            const modalContent = document.getElementById("modalContent");
-
-        
-        currentState = action;
-
-        if (action === 'change') {
-            modalContent.innerHTML = 'Select Change Option:';
-            modalContent.appendChild(createModalOptionButton('Transaction ID', 'transactionId'));
-            modalContent.appendChild(createModalOptionButton('Category', 'category'));
-            const applyButton = createModalOptionButton('Apply', 'applyChange');
-            const backButton = createModalOptionButton('Back', 'mainChange');
-            modalContent.appendChild(applyButton);
-           
-            
-        } else if (action === 'transactionId') {
-            modalContent.innerHTML = '<label for="transactionId">Enter ID:</label>' +
-                '<input type="text" id="transactionId" placeholder="Enter ID">';
-            const applyButton = createModalOptionButton('Apply', 'applyTransactionId');
-            const backButton = createModalOptionButton('Back', 'mainChange');  // Change state to 'mainChange' here
-            modalContent.appendChild(applyButton);
-            modalContent.appendChild(backButton);
-            
-        } else if (action === 'category') {
-            modalContent.innerHTML = '<label for="category">Select Category:</label>' +
-                '<select id="category">' +
-                '<option value="true_positive">True Positive</option>' +
-                '<option value="false_negative">False Negative</option>' +
-                '<option value="new_addition">New Addition</option>' +
-                '</select>';
-                const applyButton = createModalOptionButton('Apply', 'applyCategory');
-                const backButton = createModalOptionButton('Back', 'mainChange');  // Change state to 'mainChange' here
-            
-                modalContent.appendChild(backButton);
-                modalContent.appendChild(applyButton);
-        } else if (action === 'delete') {
-            modalContent.innerHTML = 'Are you sure you want to delete?';
-            const confirmButton = createModalOptionButton('Confirm', 'confirmDelete');
-            const backButton = createModalOptionButton('Back', 'mainChange');
-            modalContent.appendChild(confirmButton);
-            
-        }
-            modal.style.display = "block";
-            overlay.style.display = "block";
-        }
-
-        function createModalOptionButton(text, action) {
-    const button = document.createElement("button");
-    button.textContent = text;
-    button.classList.add("modal-option");
-
-   
-    if (action === 'applyChange' || action === 'applyTransactionId' || action === 'applyCategory') {
-        button.classList.add("apply-button");
-    } else if (action === 'backChange' || action === 'mainChange') {
-        button.classList.add("back-button");
-    }
-
-    button.setAttribute("data-action", action);
-    button.onclick = function () {
-        handleModalOptionClick(button);
-    };
-    return button;
-}
-
-        function handleModalOptionClick(button) {
-    const modalContent = document.getElementById("modalContent");
-
-    if (button.getAttribute("data-action") === "transactionId") {
-    modalContent.innerHTML = '<label for="transactionId">Enter ID:</label>' +
-        '<input type="text" id="transactionId" placeholder="Enter ID">' +
-        '<br>'; 
-    const applyButton = createModalOptionButton('Apply', 'applyTransactionId');
-    const backButton = createModalOptionButton('Back', 'mainChange');
-    modalContent.appendChild(applyButton);
-    modalContent.appendChild(backButton);
-} else if (button.getAttribute("data-action") === "category") {
-    modalContent.innerHTML = '<label for="category">Select Category:</label>' +
-        '<select id="category">' +
-        '<option value="true_positive">True Positive</option>' +
-        '<option value="false_negative">False Negative</option>' +
-        '<option value="new_addition">New Addition</option>' +
-        '</select>' +
-       
-        '<br>';
-        
-    const applyButton = createModalOptionButton('Apply', 'applyCategory');
-    const backButton = createModalOptionButton('Back', 'mainChange');
-    modalContent.appendChild(applyButton);
-    modalContent.appendChild(backButton);
-
-
-    } else if (button.getAttribute("data-action") === "mainChange") {
-       
-        modalContent.innerHTML = 'Select Change Option:' +
-        '<br>'; 
-        modalContent.appendChild(createModalOptionButton('Transaction  ID ', 'transactionId'));
-        modalContent.appendChild(createModalOptionButton('Category', 'category'));
-        const applyButton = createModalOptionButton('Apply', 'applyChange');
-        const backButton = createModalOptionButton('Back', 'backChange');
-        modalContent.appendChild(applyButton);
-        
-    } else {
-        closeModal();
-        showSuccessPopup();
-    }
-}
-
-        function closeModal() {
-            const modal = document.getElementById("myModal");
-            const overlay = document.getElementById("overlay");
-            const modalContent = document.getElementById("modalContent");
-
-            modalContent.innerHTML = '';
-
-            modal.style.display = "none";
-            overlay.style.display = "none";
-        }
-
-        function showSuccessPopup() {
-            const successPopup = document.getElementById("successPopup");
-
-            successPopup.style.display = "block";
-
-            setTimeout(function () {
-                successPopup.style.display = "none";
-            }, 3000);
-        }
-        const selectAllCheckbox = document.getElementById("selectAllCheckbox");
-        selectAllCheckbox.addEventListener("change", function () {
-            const itemCheckboxes = document.querySelectorAll(".itemCheckbox");
-            itemCheckboxes.forEach((checkbox) => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
-        });
-
-        document.addEventListener("contextmenu", function (event) {
-            event.preventDefault();
-            const target = event.target;
-
-            if (target.classList.contains("itemCheckbox")) {
-                return;
-            }
-
-            const tableRow = target.closest("tr");
-
-            if (tableRow) {
-                const itemCheckboxes = document.querySelectorAll(".itemCheckbox");
-                itemCheckboxes.forEach((checkbox) => {
-                    checkbox.style.display = (checkbox.style.display === "none" || checkbox.style.display === "") ? "inline-block" : "none";
-                });
-            }
-        });
-
-        
-        
-        const showModalButtonsLink = document.getElementById("showModalButtonsLink");
-        showModalButtonsLink.addEventListener("click", function (event) {
-        event.preventDefault();
-        const modalButtonsContainer = document.getElementById("modalButtonsContainer");
-        const modalButtons = document.getElementById("modalButtons");
-
-        
-        modalButtons.style.display = (modalButtons.style.display === "none" || modalButtons.style.display === "") ? "block" : "none";
-    });
-
-   
-    const itemCheckboxes = document.querySelectorAll(".itemCheckbox");
-    itemCheckboxes.forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-            toggleShowModalButtonsLink();
-        });
-    });
-
     
-    function toggleShowModalButtonsLink() {
-        const modalButtonsContainer = document.getElementById("modalButtonsContainer");
-        const anyCheckboxChecked = Array.from(itemCheckboxes).some((checkbox) => checkbox.checked);
-
-       
-        modalButtonsContainer.style.display = anyCheckboxChecked ? "block" : "none";
-    }
-    </script>
     <script src="{% static 'blacklist.js' %}"></script>
 </body>
 {% endblock %}

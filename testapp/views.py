@@ -537,12 +537,26 @@ def blacklists(request):
 
     if request.method == 'POST':
         action=request.POST.get('action')
-        if action=='create':
+        if action=='Add':
             transactionid=request.POST.get('transactionid')
-            report_status=request.POST.get('report_status')
-            print(transactionid)
-            new_entry=blacklist.objects.create(transactionid=transactionid,report_status=report_status)
-            new_entry.save()
+
+            category=request.POST.get('category')
+            list=[]
+            x=transaction.objects.all().values_list('transactionid',flat=True)
+            for all in x:
+                list.append(all)
+        
+            if int(transactionid) in list:
+            
+                try:
+                    new_entry=blacklist.objects.create(transactionid=transactionid,category=category)
+                    context['success']='Entry added successfully'
+                    return render(request,'blacklist.html',context)
+                except Exception as e:
+                    if 'NOT NULL constraint failed: testapp_blacklist.category' in str(e):
+                        context['warning']='Please fill all fields'
+            else:
+                context['warning']='The transaction id is not found in the transactions database'
         
         if action=='remove':
             items=request.POST.get('item_value')

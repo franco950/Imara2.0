@@ -14,8 +14,6 @@
             {% if success %}<p style="color: green;">{{success}}</p>{% endif %}
             {% if error %}<p style="color: red;">{{error}}</p>{% endif %}
         </div>
-   >
-       
         <div id="formModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeForm()">&times;</span>
@@ -81,12 +79,8 @@
                         <th>email</th>
                         <th>Actions</th>
                         <th>
-                            
-                                <!-- <a href="#" id="showModalButtonsLink"onclick="openModal('changes')"><img src="{% static 'options_13525834.png' %}"id= 'menudots'></a> -->
-                            </div>
+                           
                         </th>
-
-                      
                     </tr>
                 </thead>
                 <tbody>
@@ -100,10 +94,10 @@
                        
                          {% if administrator %}  <td>
                             <button id="change" onclick=" openModal('changes')">Change user</button></td>
-                            <div id="changes" class="modal">
+                            <div id="change" class="modal"style='color:black; width:300px;' >
                                 <form method='post' action="{% url 'adminpanel' %}">
                                     {% csrf_token %}
-                                    <input type="hidden" id="deleteUserId" name="item_value" value='{{ items.staffid }}'>
+                                    <input type="hidden" name="item_value" value='{{ items.staffid }}'>
                                     <B><h3>Change user details</h3></B><br>
                                     <label for="staffid"><b>Staff Id :</b></label><br>
                                     <input type="number" id="staffid" default="{{ items.staffid }}" name="staffid" min="1000" max="10000000" required><br>
