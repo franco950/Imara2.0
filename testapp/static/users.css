@@ -3,21 +3,74 @@
     background-color:#a41623;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
     color:white;/* white;*/
     padding: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
     border: none;
     cursor: pointer;
 
 }
-.itemCheckbox {
-    display: none;
-  }
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+button.modal-option {
+    margin: 5px; /* Adjust the value to your preference */
+}
+.reject-btn:hover {
+    color: #8a8484; 
+}
+button.modal-option.apply-button,
+button.modal-option.back-button {
+    background-color: #a4a8dd;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px; /* Adjust the value to your preference */
 }
 
+button.modal-option.apply-button:hover,
+button.modal-option.back-button:hover {
+    color: #8a8484; 
+    /* Add hover styles if needed */
+}
+.approve-btn {
+    border-radius: 8px;
+    background-color: #a4a8dd;/*#a4a8dd;*/
+    color: white;
+    margin-right: 10px;
+    padding: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border: none;
+    cursor: pointer;
+}
+.approve-btn1{
+    border-radius: 8px;
+    background-color: #a4a8dd;/*#a4a8dd;*/
+    color: white;
+    padding: 10px;
+    margin:5px;
+    border: none;
+    cursor: pointer;
 
+}
+#add{
+    background-color: #a4a8dd;
+    border-radius: 8px;
+    padding: 10px;
+    color: white;
+    margin:5px;
+}
+.approve-btn:hover {
+    color: #8a8484; 
+}
+body{
+    
+    top:0;
+    left:0;
+    margin:0;
+    padding:0;
+    text-decoration: none;
+
+}
 .modal {
     border-radius: 8px;
     display: none;
@@ -27,9 +80,10 @@
     transform: translate(-50%, -50%);
     padding: 20px;
     background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(235, 205, 205, 0.1);
     z-index: 999;
 }
+
 
 /* Overlay styles */
 .overlay {
@@ -46,9 +100,7 @@
 #modalButtons{
     position:fixed;
     top: 130px;
-    left: 1080px;
-    width:100px;
-    height:100px;
+    left: 780px;
 
 }
 
@@ -77,12 +129,10 @@
 
 }
 #delete{
-    border-top:10px;
-    border-radius: 8px;
-    background-color:#a41623;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
     color:white;
-    width:70px;
-    height:30px;
+    margin-left:15px;
+    background-color:#ee3040;
+    border-radius: 8px;
 }
 #change{
     border-radius: 8px;
@@ -90,67 +140,23 @@
     color:white;
 }
 
-
-    
-
-#cards3 {
-    
-    width:100px;
-    
-    margin-left: 30px;
-    margin-right: 20px;
-    margin-top:0;
-    margin-bottom: 40px;
-    padding: 0;
-    padding:10px;
-    border: 1px solid #b8afaf;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
-    
-}
-
-.reject-btn:hover {
-    color: #8a8484; 
-}
-.approve-btn {
-    border-radius: 8px;
-    background-color: #a4a8dd;/*#a4a8dd;*/
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-}
-.approve-btn:hover {
-    color: #8a8484; 
-}
-body{
-    
-    top:0;
-    left:0;
-    margin:0;
-    padding:0;
-
-
-}
-
-
-
-#myModal{
-    position: fixed;
-    top:390px;
-    left:900px;
-
-}
 .modal-content {
     position: relative;
-    width: 500px;
-    height: 200px;
+    width: 400px;
     background-color: #fff;
-    margin: 5% auto;
+    margin: 5px auto;
     padding: 20px;
     border: 1px solid #b8afaf;
     border-radius: 8px;
+    
+}
+label{
+    margin:5px;
+    margin-bottom:10px
+}
+
+#create{
+    margin-top:20px
 }
 .close {
     color: #aaa;
@@ -173,13 +179,17 @@ body{
     margin-left:30px;
     padding:0;
 }
+.itemCheckbox {
+    display: none;
+  }
 
 .card {
-    width:1050px;
+    user-select: none;
+    width:850px;
     background-position-x:fixed;
     margin-left: 30px;
     margin-right: 20px;
-   
+    margin-top:0;
     margin-bottom: 40px;
     padding: 0;
     padding:10px;
@@ -188,7 +198,21 @@ body{
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     
 }
-
+#cards3 {
+    width:300px;
+    
+    margin-left: 30px;
+    margin-right: 20px;
+    margin-top:0;
+    margin-bottom: 40px;
+    padding: 0;
+    padding:10px;
+    border: 1px solid #b8afaf;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    
+}
 
 table {
     border-collapse: collapse;
@@ -202,9 +226,10 @@ thead th {
     text-align: left;
 }
 
-/* Add lighter lines below the table data rows */
+
 tbody td {
-    padding:3px;
+    
+    padding:10px;
     padding-left: 15px;
     border-bottom: 1px solid #ccc; /* Light line color */
 }
@@ -213,12 +238,17 @@ tbody tr:hover {
 }
 
 #menudots{
-    height:20px;
-    width:20px;
+    margin:0;
+    padding:0;
+    border:0;
+    height:15px;
+    width:15px;
 }
-
-
-
-
-    
-
+#automate{
+    padding:10px;
+    margin:10px;
+}
+#checkbox{
+    margin:20px;
+    padding:20px;
+}

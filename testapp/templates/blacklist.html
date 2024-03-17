@@ -12,7 +12,11 @@
     </div>
     <div id="main">
         <div id="title">
-            <h3>Blacklist</h3> <button id="add" onclick=" openForm(event)">Add to blacklist</button>
+            <h3>Blacklist</h3> 
+            {% if warning %}<p style="color: red;">{{warning}}</p>{% endif %}
+            {% if success %}<p style="color: green;">{{success}}</p>{% endif %}
+            {% if error %}<p style="color: red;">{{error}}</p>{% endif %}
+            <button id="add" onclick=" openForm(event)">Add to blacklist</button>
            
         </div>
        
@@ -20,18 +24,18 @@
 
             <div class="modal-content">
                 <span class="close" onclick="closeForm()">&times;</span>
-                <form method='post' action="{% url 'reports' %}">
+                <form method='post' action="{% url 'blacklist' %}">
                     {% csrf_token %}
-                    <label for="transactionid">Transaction Id:</label><br>
-                    <input type="text" id="transactionid" name="transactionid"><br>
-                        Category:<br>
-                    <input type="radio" id="false positive" name="report_status" value="false positive">
-                    <label for="false positive">False positive</label><br>
+                  
+                    <label for="transactionid" id="labela" ><b>Transaction Id:</b></label><br>
+                    <input type="number" id="transactionid" name="transactionid"><br>
+                        <b>Category:</b><br>
+                    <input type="radio" id="true positive" name="report_status" value="true positive">
+                    <label for="true positive">True positive</label><br>
                     <input type="radio" id="false negative" name="report_status" value="false negative">
                     <label for="false negative">False negative</label><br>
-                    <input type="radio" id="false negative" name="report_status" value="false negative">
-                    <label for="false negative">New Addition</label><br>
-                    <input type="submit" name="action" value="submit" >
+                    
+                    <input type="submit" id="black" name="action" value="submit" >
                 </form>
             </div></div>
        

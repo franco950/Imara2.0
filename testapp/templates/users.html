@@ -1,50 +1,66 @@
 {% extends 'header.html' %}
 {% block content %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'blacklist.css' %}" >
+<link rel="stylesheet" href="{% static 'users.css' %}" >
 
 <body>
-    <div id="modalButtons" style="display: none;">
-        <div class="card " id="cards3" >
-            <button class="modal-btn" id="change" data-action="change" onclick="openModal('change')">Change</button>
-            <button class="modal-btn" id="delete" data-action="delete" onclick="openModal('delete')">Delete</button>
-        </div>
-    </div>
+
     <div id="main">
         <div id="title">
             <h3>Users</h3>
-            <button id="add" onclick=" openForm(event)">Add user</button> 
+            <button id="add" onclick=" openForm('formModal')">Add user</button> 
+            
+            {% if warning %}<p style="color: red;">{{warning}}</p>{% endif %}
+            {% if success %}<p style="color: green;">{{success}}</p>{% endif %}
+            {% if error %}<p style="color: red;">{{error}}</p>{% endif %}
         </div>
-        
+   >
+       
         <div id="formModal" class="modal">
-
             <div class="modal-content">
                 <span class="close" onclick="closeForm()">&times;</span>
-                <form method='post' action="{% url 'reports' %}">
+                <form method='post' action="{% url 'adminpanel' %}">
                     {% csrf_token %}
-                    <label for="transactionid">Staff Id:</label><br>
-                    <input type="text" id="transactionid" name="transactionid"><br>
-                        Roles:<br>
-                        <label for="customTimeOptions">Department:</label>
-                        <select id="customTimeOptions" name="customTimeOptions">
-                            <option value="lastDay">Agent </option>
-                            <option value="lastWeek">Manager</option>
-                            <option value="lastMonth">Support Staff</option>
-                           
-                        </select><br>
-                        <label for="customTimeOptions">Location:</label>
-                        <select id="customTimeOptions" name="customTimeOptions">
-                            <option value="lastDay">Kiambu </option>
-                            <option value="lastYear">Thika</option>
-                            <option value="lastMonth">Online</option>
-                           
-                          
-                           
-                            
-                        </select><br>
-                    <input type="radio" id="false negative" name="report_status" value="false negative">
-                    <label for="false negative">Is active</label><br>
-                    <input type="submit" name="action" value="submit" >
+                    <label for="username"><b>Username:</b></label><br>
+                    <input type="text" id="username" name="username"><br>
+                    <label for="password"><b>Password:</b></label><br>
+                    <input type="password" id="password"  name="password"><br>
+                   
+                    <label for="email"><b>Email:</b></label><br>
+                    <input type="email" id="email" name="email"><br>
+                    <label for="staffid"><b>Staff Id:</b></label><br>
+                    <input type="number" id="staffid" name="staffid" min="1000" max="10000000" required><br>
+                    
+                        <b>Roles:</b><br>
+                    <label for="department">Department:</label>
+                    <select id="department" name="department">
+                        {% if under.agent %}
+                        <option value="agent">agent </option>{% endif %}
+                        {% if under.manager%}
+                        <option value="manager">manager </option>{% endif %}
+                        {% if under.support_staff %}
+                        <option value="support staff">support staff</option>{% endif %}
+                    
+                    </select><br>
+                    <label for="location">Location:</label>
+                    <select id="location" name="location">
+                       <option value="Kiambu">Kiambu </option>
+                        <option value="Thika">Thika</option>
+                        <option value="Online">Online</option>
+                    </select><br>
+                    <label for="station">station:</label>
+                    <select id="station" name="station">
+                        <option value="01">01 </option>
+                        <option value="02">02</option>
+                        <option value="both">both</option>
+                    </select><br>
+                    <label for="active"><b>Is active(can use the system)</b></label><br>
+                    <label for="true">active</label><br>
+                    <input type="radio" id="is active" name="active" value="True"><br>
+                    <label for="inactive">inactive</label><br>
+                    <input type="radio" id="inactive" name="active" value="False"><br>
+                    
+                    <input id="create" type="submit" name="action" value="create" >
                 </form>
             </div></div>
        
@@ -58,16 +74,15 @@
         <div class="card" style="background-color: #ffffff;">
             <table id="myTable">
                 <thead>
-                    <tr>
+                    <tr><th>username</th>
                         <th>Staff Id</th>
                         <th>Department</th>
                         <th>Location</th>
-                        
-                        
-                        
+                        <th>email</th>
+                        <th>Actions</th>
                         <th>
-                            <div id="modalButtonsContainer" style="display: none;">
-                                <a href="#" id="showModalButtonsLink"><img src="{% static 'options_13525834.png' %}"id= 'menudots'></a>
+                            
+                                <!-- <a href="#" id="showModalButtonsLink"onclick="openModal('changes')"><img src="{% static 'options_13525834.png' %}"id= 'menudots'></a> -->
                             </div>
                         </th>
 
@@ -76,30 +91,75 @@
                 </thead>
                 <tbody>
                     {% for items in list %}
-                        <tr>
+                        <tr><td>{{ items.username }}</td>
                             <td>{{ items.staffid }}</td>
                             <td>{{ items.department }}</td>
                             <td>{{ items.location}}</td>
-                            <!-- <td>
-                                <form method="post" action="{% url 'blacklist' %}">
-                                    <input type="hidden" name="item_value" value="{{ items }}">
+                            <td>{{ items.email }}</td>
+                           
+                       
+                         {% if administrator %}  <td>
+                            <button id="change" onclick=" openModal('changes')">Change user</button></td>
+                            <div id="changes" class="modal">
+                                <form method='post' action="{% url 'adminpanel' %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="approve-btn" name="action" value="approve">Change</button>
-                                    <button type="submit" class="reject-btn" name="action" value="reject">Delete</button>
+                                    <input type="hidden" id="deleteUserId" name="item_value" value='{{ items.staffid }}'>
+                                    <B><h3>Change user details</h3></B><br>
+                                    <label for="staffid"><b>Staff Id :</b></label><br>
+                                    <input type="number" id="staffid" default="{{ items.staffid }}" name="staffid" min="1000" max="10000000" required><br>
+                                   
+                                    <label for="username"><b>Username:</b></label><br>
+                                    <input type="text" id="username" default="{{ items.username }}" name="username"><br>
+                                   
+                                    <label for="email"><b>Email:</b></label><br>
+                                    <input type="email" id="email" default="{{ items.email }}" name="email"><br>
+                                 
+                                    
+                                        <b>Roles:</b><br>
+                                    <label for="department">Department:</label>
+                                    <select id="department" name="department" default="{{ items.department }}">
+                                        {% if under.agent %}
+                                        <option value="agent">agent </option>{% endif %}
+                                        {% if under.manager%}
+                                        <option value="manager">manager </option>{% endif %}
+                                        {% if under.support_staff %}
+                                        <option value="support staff">support staff</option>{% endif %}
+                                    
+                                    </select><br>
+                                    <label for="location">Location:</label>
+                                    <select id="location" name="location" default="{{ items.location}}">
+                                       <option value="Kiambu">Kiambu </option>
+                                        <option value="Thika">Thika</option>
+                                        <option value="Online">Online</option>
+                                    </select><br>
+                                    <label for="station">station:</label>
+                                    <select id="station" name="station" >
+                                        <option value="01">01 </option>
+                                        <option value="02">02</option>
+                                        <option value="both">both</option>
+                                    </select><br>
+                                    <label for="active"><b>Is active(can use the system)</b></label><br>
+                                    <label for="true">active</label><br>
+                                    <input type="radio" id="is active" name="active" value=True><br>
+                                    <label for="inactive">inactive</label><br>
+                                    <input type="radio" id="inactive" name="active" value=False><br>
+                                    
+                                    <input id="create" type="submit" name="action" value="change user" >
                                 </form>
-                            </td> -->
-                            <td>
-                                <input type="checkbox" class="itemCheckbox" data-item-id="{{ items.blacklistid }}">
-                            </td>
-                            
+                            </div><td>
+                            <form method="post" action="{% url 'adminpanel' %}">{% csrf_token %}
+                                <input type="hidden" id="deleteUserId" name="item_value" value='{{ items.staffid }}'>
+                            <button type="submit"id='delete' name="action" value="delete"  >Delete User</form></td>  
+                           {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        
 
         <!-- Overlay -->
-        <div class="overlay" id="overlay" onclick="closeModal()"></div>
+        <div class="overlay" id="overlay" onclick="closeModal('changes')"></div>
 
         <!-- Success message pop-up -->
         <div class="success-popup" id="successPopup">
@@ -107,195 +167,6 @@
         </div>
     </div>
 
-    <script>
-         // Global variable to store the current state/modal
-        let currentState = 'mainChange';
-
-        function openModal(action) {
-            const modal = document.getElementById("myModal");
-            const overlay = document.getElementById("overlay");
-            const modalContent = document.getElementById("modalContent");
-
-        // Set the current state/modal
-        currentState = action;
-
-        if (action === 'change') {
-            modalContent.innerHTML = 'Select Change Option:';
-            modalContent.appendChild(createModalOptionButton('Transaction ID', 'transactionId'));
-            modalContent.appendChild(createModalOptionButton('Category', 'category'));
-            const applyButton = createModalOptionButton('Apply', 'applyChange');
-            const backButton = createModalOptionButton('Back', 'mainChange');
-            modalContent.appendChild(applyButton);
-           
-            
-        } else if (action === 'transactionId') {
-            modalContent.innerHTML = '<label for="transactionId">Enter ID:</label>' +
-                '<input type="text" id="transactionId" placeholder="Enter ID">';
-            const applyButton = createModalOptionButton('Apply', 'applyTransactionId');
-            const backButton = createModalOptionButton('Back', 'mainChange');  // Change state to 'mainChange' here
-            modalContent.appendChild(applyButton);
-            modalContent.appendChild(backButton);
-            
-        } else if (action === 'category') {
-            modalContent.innerHTML = '<label for="category">Select Category:</label>' +
-                '<select id="category">' +
-                '<option value="true_positive">True Positive</option>' +
-                '<option value="false_negative">False Negative</option>' +
-                '<option value="new_addition">New Addition</option>' +
-                '</select>';
-                const applyButton = createModalOptionButton('Apply', 'applyCategory');
-                const backButton = createModalOptionButton('Back', 'mainChange');  // Change state to 'mainChange' here
-            
-                modalContent.appendChild(backButton);
-                modalContent.appendChild(applyButton);
-        } else if (action === 'delete') {
-            modalContent.innerHTML = 'Are you sure you want to delete?';
-            const confirmButton = createModalOptionButton('Confirm', 'confirmDelete');
-            const backButton = createModalOptionButton('Back', 'mainChange');
-            modalContent.appendChild(confirmButton);
-            
-        }
-            modal.style.display = "block";
-            overlay.style.display = "block";
-        }
-
-        function createModalOptionButton(text, action) {
-    const button = document.createElement("button");
-    button.textContent = text;
-    button.classList.add("modal-option");
-
-    // Add specific class based on the action
-    if (action === 'applyChange' || action === 'applyTransactionId' || action === 'applyCategory') {
-        button.classList.add("apply-button");
-    } else if (action === 'backChange' || action === 'mainChange') {
-        button.classList.add("back-button");
-    }
-
-    button.setAttribute("data-action", action);
-    button.onclick = function () {
-        handleModalOptionClick(button);
-    };
-    return button;
-}
-
-        function handleModalOptionClick(button) {
-    const modalContent = document.getElementById("modalContent");
-
-    if (button.getAttribute("data-action") === "transactionId") {
-    modalContent.innerHTML = '<label for="transactionId">Enter ID:</label>' +
-        '<input type="text" id="transactionId" placeholder="Enter ID">' +
-        '<br>'; // Add a line break
-    const applyButton = createModalOptionButton('Apply', 'applyTransactionId');
-    const backButton = createModalOptionButton('Back', 'mainChange');
-    modalContent.appendChild(applyButton);
-    modalContent.appendChild(backButton);
-} else if (button.getAttribute("data-action") === "category") {
-    modalContent.innerHTML = '<label for="category">Select Category:</label>' +
-        '<select id="category">' +
-        '<option value="true_positive">True Positive</option>' +
-        '<option value="false_negative">False Negative</option>' +
-        '<option value="new_addition">New Addition</option>' +
-        '</select>' +
-       
-        '<br>';
-        
-    const applyButton = createModalOptionButton('Apply', 'applyCategory');
-    const backButton = createModalOptionButton('Back', 'mainChange');
-    modalContent.appendChild(applyButton);
-    modalContent.appendChild(backButton);
-
-
-    } else if (button.getAttribute("data-action") === "mainChange") {
-        // Handle going back to the main "Change" modal
-        modalContent.innerHTML = 'Select Change Option:' +
-        '<br>'; // Add a line break;
-        modalContent.appendChild(createModalOptionButton('Transaction  ID ', 'transactionId'));
-        modalContent.appendChild(createModalOptionButton('Category', 'category'));
-        const applyButton = createModalOptionButton('Apply', 'applyChange');
-        const backButton = createModalOptionButton('Back', 'backChange');
-        modalContent.appendChild(applyButton);
-        
-    } else {
-        closeModal();
-        showSuccessPopup();
-    }
-}
-
-        function closeModal() {
-            const modal = document.getElementById("myModal");
-            const overlay = document.getElementById("overlay");
-            const modalContent = document.getElementById("modalContent");
-
-            modalContent.innerHTML = '';
-
-            modal.style.display = "none";
-            overlay.style.display = "none";
-        }
-
-        function showSuccessPopup() {
-            const successPopup = document.getElementById("successPopup");
-
-            successPopup.style.display = "block";
-
-            setTimeout(function () {
-                successPopup.style.display = "none";
-            }, 3000);
-        }
-        const selectAllCheckbox = document.getElementById("selectAllCheckbox");
-        selectAllCheckbox.addEventListener("change", function () {
-            const itemCheckboxes = document.querySelectorAll(".itemCheckbox");
-            itemCheckboxes.forEach((checkbox) => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
-        });
-
-        document.addEventListener("contextmenu", function (event) {
-            event.preventDefault();
-            const target = event.target;
-
-            if (target.classList.contains("itemCheckbox")) {
-                return;
-            }
-
-            const tableRow = target.closest("tr");
-
-            if (tableRow) {
-                const itemCheckboxes = document.querySelectorAll(".itemCheckbox");
-                itemCheckboxes.forEach((checkbox) => {
-                    checkbox.style.display = (checkbox.style.display === "none" || checkbox.style.display === "") ? "inline-block" : "none";
-                });
-            }
-        });
-
-        
-        
-        const showModalButtonsLink = document.getElementById("showModalButtonsLink");
-        showModalButtonsLink.addEventListener("click", function (event) {
-        event.preventDefault();
-        const modalButtonsContainer = document.getElementById("modalButtonsContainer");
-        const modalButtons = document.getElementById("modalButtons");
-
-        // Toggle visibility of the modal buttons
-        modalButtons.style.display = (modalButtons.style.display === "none" || modalButtons.style.display === "") ? "block" : "none";
-    });
-
-    // Add an event listener to each checkbox to toggle the "Show Modal Buttons" link
-    const itemCheckboxes = document.querySelectorAll(".itemCheckbox");
-    itemCheckboxes.forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-            toggleShowModalButtonsLink();
-        });
-    });
-
-    // Function to toggle the visibility of the "Show Modal Buttons" link
-    function toggleShowModalButtonsLink() {
-        const modalButtonsContainer = document.getElementById("modalButtonsContainer");
-        const anyCheckboxChecked = Array.from(itemCheckboxes).some((checkbox) => checkbox.checked);
-
-        // Toggle visibility based on whether any checkbox is checked
-        modalButtonsContainer.style.display = anyCheckboxChecked ? "block" : "none";
-    }
-    </script>
     <script src="{% static 'blacklist.js' %}"></script>
 </body>
 {% endblock %}

@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect,get_object_or_404
 from testapp.models import transaction,alert,report,blacklist,systemsettings,CustomUser
 import numpy as np
 import joblib 
+import csv
+from django.db import IntegrityError
 from django.urls import reverse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -27,31 +29,24 @@ from django.db.models.functions import Extract
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 directory_path = 'testapp\joblib models'
 file_names = os.listdir(directory_path)
-
 # Extract timestamps from file names
 timestamps = [datetime.strptime(file_name.split('_')[1], '%Y%m%d%H%M%S') for file_name in file_names]
-
 # Identify the file with the latest timestamp
 latest_file_index = timestamps.index(max(timestamps))
 latest_file = file_names[latest_file_index]
 # Access or perform operations with the file having the latest timestamp
 latest_file_path=f'testapp\\joblib models\\{latest_file}'
 def getversion():
-    client=APIClient()
     url = 'http://127.0.0.1:8001/version'
     response = requests.get(url)
-
     if response.status_code == 200:
         data = response.json()
         if data.get('version') == latest_file:
             print('System has the latest model version')
-
             return JsonResponse({'message': 'System has the latest model version'})
         else:
-           
             # Request the joblib file
             request_joblib_file()
-
     else:
         print(f"API call failed with status code: {response.status_code}")
 # Process the data based on a certain value
@@ -65,7 +60,6 @@ def extract_filename(content_disposition):
     return f'downloadedmodel_{timestamp}_.joblib'  # Default name if filename extraction fails      
 
 def request_joblib_file():
-    client=APIClient()
     joblib_url = 'http://127.0.0.1:8001/download'
     joblib_response = requests.get(joblib_url)
 
@@ -84,14 +78,10 @@ def request_joblib_file():
         
     else:
         print(f"Failed to download joblib file with status code: {joblib_response.status_code}")
-
-
-
 try:
     getversion()
 except Exception:
     ("error problem accessing the machine learning system")
-
 try:
     loaded_model = joblib.load(latest_file_path)
 except:
@@ -138,7 +128,7 @@ for alll in tra:
             except:
                 pass
 
-all_stations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02']
+all_stations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02','Kiambu03']
 all_locations=['Kiambu','Thika','Online']  
 
 def locator(request):
@@ -162,49 +152,48 @@ def locator(request):
 
     return HttpResponse('User not logged in')     
 global_data={}
+# queryset=transaction.objects.all()
+# fields=['transactionid', 'location','timestamp', 'transaction_state']
+# filename='transactions.csv'
+# with open(filename, 'w', newline='') as csvfile:
+#             writer = csv.DictWriter(csvfile, fieldnames=fields)
+#             writer.writeheader()
+
+#             for obj in queryset:
+#                 writer.writerow({field: getattr(obj, field) for field in fields})
+
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transactions(request):
-       
     if request.method=='POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
         except json.JSONDecodeError:
-            
             return JsonResponse({'error': 'Invalid JSON in the request'}, status=400)
-            
-        
         newentry=transaction.objects.create(location=data.get('location'), transaction_data=data.get('data'))
         newentry.save()
         if data.get('location') not in all_stations:
             newentry.transaction_state='invalid location'
             newentry.save()
             return JsonResponse({"error":"invalid transaction location"})
-
         newdata=newentry.transaction_data.split(',')
         datas=newdata[:-2]
-        
         transaction_list= list(map(float, datas))
         input_data = np.array(transaction_list)
-        reshaped_data = input_data.reshape(1, -1)
-        
-                
+        reshaped_data = input_data.reshape(1, -1)   
         try:
             done=prediction(reshaped_data)
-            
         except Exception as e:
             newentry.transaction_state='invalid data'
             newentry.save()
             return JsonResponse({"error":f"invalid transaction data {str(e)}"})
-        
         newid=newentry.transactionid
         if done==0:
             pred='legitimate'
             newentry.transaction_state='predicted'
             newentry.save()
-            
         elif done==1:
             pred='fraud'
             transactlocation=newentry.location
@@ -328,12 +317,12 @@ def home(request):
   
 @login_required
 def alerts(request):
-
-   
     user = request.user
     name=user.username
+    context={}
     if user.is_authenticated:
         content={'set':name}
+        context['content']=content
     staff_location=locator(request).get('staff_stations')
     transaction_data_labels=[ '0','merchant','category','amt','last','gender','lat','long','city_pop','job','merch_lat',
                              'merch_long','first','merchant_name']
@@ -344,15 +333,12 @@ def alerts(request):
     count = alertpage.count()
     if count>0:
         set_alert=f"Pending alerts:{count}"
-        statement={'set':set_alert}
-            
+        statement={'set':set_alert}  
     else:
         set_alert='No pending alerts'
         statement={'set':set_alert}
     def get_traits(transactid):
-        all=transaction.objects.get(transactionid=transactid)
-        
-            
+        all=transaction.objects.get(transactionid=transactid) 
         datas=all.transaction_data.split(',')
         print(datas)
         gender=datas[5]
@@ -360,29 +346,20 @@ def alerts(request):
             answer='male'
         else:
             answer='female'
-
         trait_list={'first name':datas[12],'gender':answer,'amount':datas[3],'merchant_name':datas[13]}
         return trait_list
-    
-   
     if request.method == 'POST':
-
         items = request.POST.get('item_value')
         action = request.POST.get('action')
         items=items.split(';')
         alertid=items[0].split(':')
         myalertid=alertid[1]
-         
-
         if action=='reject':
             alertchange=alert.objects.get(alertid=myalertid)
-            
             alertchange.alert_status='rejected'
             alertchange.save()
             new_blacklist_entry = blacklist.objects.create(transactionid=alertchange.transactionid,
             category='true positive')
-            
-
         if action=='approve':
             alertchange=alert.objects.get(alertid=myalertid)
             alertchange.alert_status='approved'
@@ -392,21 +369,15 @@ def alerts(request):
             new_entry.save()
         if action=='traits':
             alertchange=alert.objects.get(alertid=myalertid)
-            print('yaaaaay')
-            
             customer_data=get_traits(alertchange.transactionid)
             context={'set':alertpage,'content':content,'statement':statement,'count':count,'customer_data':customer_data}
-            filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+            filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',
+                                                                                                                             flat=True)
             new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
             global_data['new_alerts']=new_alerts
             context['new_alerts']=new_alerts
-            
-
-
-            
             if user.is_staff == True:
                 context['allowed']=True
-                
             return render(request,'alertpage.html',context) 
       
             
@@ -452,9 +423,10 @@ def reports(request):
 
     user = request.user
     name=user.username
-    if user.is_authenticated:
-        content={'set':name}
     
+    
+    content={'set':name}
+    context={'content':content}
     filter_new_reports=transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     filter_reports=report.objects.filter(transactionid__in=filter_new_reports,verification='waiting')
     entry_count = filter_reports.count()
@@ -463,6 +435,9 @@ def reports(request):
     custom_start_date = five_years_ago.strftime("%Y-%m-%d")
     custom_end_date=current_date.strftime("%Y-%m-%d")
     time_view=[custom_start_date,' to ',custom_end_date]
+    context['count']=entry_count
+    context['time_view']=time_view
+    context['filter']=filter_reports
 
     if request.method == 'POST':
         
@@ -497,6 +472,7 @@ def reports(request):
             staffid=report_staffid
             report_status=reportstatus 
             verification=report_verification
+            
             change={'transactionid':transactionid,'staffid':staffid,'report_status': report_status,'verification':verification}
             for key, value in change.items():
                 if value is not None:
@@ -525,14 +501,14 @@ def reports(request):
             filter_reports=report.objects.filter(timestamp__range=[custom_start_date, custom_end_date ],
             report_status=reportstatus,transactionid=report_transactionid,transactionid__in=filter_new_reports,
             reportid=filter_reportid,staffid=report_staffid,verification=report_verification)
+            context['filter']=filter_reports
     
     for all in filter_reports.values():
         if all['verification']=='waiting':
             waiting=True
-        else:
-            waiting=0
-
-    context={'filter':filter_reports,'content':content,'count':entry_count,'waiting':waiting,'time_view':time_view}
+            context['waiting']=waiting
+        
+    
 
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
@@ -546,24 +522,27 @@ def reports(request):
 
 @login_required
 def blacklists(request):
- 
-    
     user = request.user
-    
     name=user.username
     if user.is_authenticated:
         content={'set':name}
-    
-
+        context={'content':content}
     full_list=blacklist.objects.all()
-
     count=full_list.count()
-  
     if count>0:
-         context={'set':full_list,'content':content}
+        context['set']=full_list
+    else:
+        full_list='no entries to display'
+        context['set']=full_list
 
     if request.method == 'POST':
         action=request.POST.get('action')
+        if action=='create':
+            transactionid=request.POST.get('transactionid')
+            report_status=request.POST.get('report_status')
+            print(transactionid)
+            new_entry=blacklist.objects.create(transactionid=transactionid,report_status=report_status)
+            new_entry.save()
         
         if action=='remove':
             items=request.POST.get('item_value')
@@ -574,7 +553,7 @@ def blacklists(request):
             delete.delete()
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
-    global_data['new_alerts']=new_alerts
+    
     context['new_alerts']=new_alerts
     if user.is_staff == True:
         context['allowed']=True
@@ -644,17 +623,133 @@ def guidelines(request):
         if user.is_staff == True:
             content['allowed']=True
     return render(request,'guidelines.html',content)
+
 @login_required
 def adminpanel(request):
+    fields=['emailaddress', 'totpdevice', 'staticdevice', 'auth_token', 'logentry', 'id',
+             'password', 'last_login', 'is_superuser', 'username', 'first_name', 'last_name',
+               'email', 'is_staff', 'is_active', 'date_joined', 'staffid', 'department', 'location',
+                 'groups', 'user_permissions']
     user = request.user
     name=user.username
-    if user.is_authenticated:
-        content={'set':name}
-        if user.is_staff == True:
-            content['allowed']=True
-        userlist=CustomUser.objects.all()
-        content['list']=userlist
-    return render(request,'users.html',content)
+    dept=user.department
+
+    levels={'admin':1,'support_staff':2,'manager':3,'agent':4}
+    roles=['admin','support_staff','manager','agent']
+    under={}
+    for all in roles:
+        if levels[all]>levels[dept]:
+            under[all]=all
+    print(under)
+    loc= locator(request).get('staff_stations')
+    context={'set':name,'dept':dept,'loc':loc,'under':under}
+    if user.department=='admin':
+        context['administrator']=True
+   
+    if user.is_staff == True:
+        context['allowed']=True
+    if user.department in 'admin':
+        userlist=CustomUser.objects.exclude(department='admin')
+    else:
+        userlist=CustomUser.objects.filter(location__in= locator(request).get('staff_stations'))
+
+    context['list']=userlist
+    if request.method == 'POST':
+        action=request.POST.get('action')
+        
+        
+        
+        if action=='create':
+            try:
+                locationa=request.POST.get('location'),
+                userlocation=[]
+                for all in locationa:
+                    userlocation=all
+                station=request.POST.get('station')
+                if station=='both':
+                    userloc=userlocation
+                else:
+                    userloc=userlocation+station
+                new_user=CustomUser.objects.create(username=request.POST.get('username'),
+                
+                email=request.POST.get('email'),
+                is_active=request.POST.get('active'),
+                staffid=request.POST.get('staffid'),
+                department=request.POST.get('department'),
+                location=userloc,
+                password=request.POST.get('password'))
+                new_user.save()
+                context['success']='! new user created successfully'
+            except Exception as e:
+                if 'UNIQUE constraint failed: testapp_customuser.username' in str(e):
+                    context['warning']='error! The username is taken, please use another one'
+                elif 'UNIQUE constraint failed: testapp_customuser.staffid' in str(e):
+                    context['warning']='error! The staff Id needs to be unique'
+                elif 'Python int too large to convert to SQLite INTEGER' in str(e):
+                    context['warning']='error! please use 4 to 8 digitsfor the staffid(1000 to 10000000)'
+                else:
+                    context['warning']='error! all form fields must be filled accoring to the type specified'
+                    context['error']=e
+        if action=='change user':
+            item=request.POST.get('staffid')
+            print(item)
+            # try:
+            locationa=request.POST.get('location'),
+            userlocation=[]
+            for all in locationa:
+                userlocation=all
+            station=request.POST.get('station')
+            if station=='both':
+                userloc=userlocation
+            else:
+                userloc=userlocation+station
+            new_user=CustomUser.objects.get(staffid=item)
+            print(new_user)
+            
+            username=request.POST.get('username'),
+            for all in username:
+                new_user.username=all
+            print(new_user.username)
+            
+            email=request.POST.get('email'),
+            for all in email:
+                new_user.email=all
+            active=request.POST.get('active'),
+            for all in active:
+                new_user.is_active=all
+            print(new_user.is_active)
+            staffid=request.POST.get('staffid'),
+            for all in staffid:
+                new_user.staffid=all
+            department=request.POST.get('department'),
+            for all in department:
+                new_user.department=all
+            new_user.location=userloc
+            print(new_user)
+            
+            new_user.save()
+            
+        
+            context['success']='! user changed successfully'
+            # except Exception as e:
+            #     if 'UNIQUE constraint failed: testapp_customuser.username' in str(e):
+            #         context['warning']='error! The username is taken, please use another one'
+            #     elif 'UNIQUE constraint failed: testapp_customuser.staffid' in str(e):
+            #         context['warning']='error! The staff Id needs to be unique'
+            #     elif 'Python int too large to convert to SQLite INTEGER' in str(e):
+            #         context['warning']='error! please use 4 to 8 digitsfor the staffid(1000 to 10000000)'
+            #     else:
+            #         context['warning']='error! all form fields must be filled accoring to the type specified'
+            #         context['error']=e
+        if action=='delete':
+            item=request.POST.get('item_value')
+            entry=CustomUser.objects.get(staffid=item)
+            entry.delete()
+                
+            
+    
+    
+    return render(request,'users.html',context)
 
 
 def logout_view(request):

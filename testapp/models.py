@@ -1,22 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone  
+from django.core.validators import MinValueValidator, MaxValueValidator
 class CustomUser(AbstractUser):
-    staffid = models.CharField(max_length=10, blank=True, null=True)
+    staffid = models.IntegerField(max_length=10, blank=True, null=True,unique=True,  validators=[MinValueValidator(1000), MaxValueValidator(10000000)])
     department=models.CharField(max_length=30)
     location=models.CharField(max_length=20)
     def __str__(self):
-        return f"{str(self.staffid)}  :  {self.username} :  {self.department}  : {self.location}"
-
-
-
+        return f"{str(self.staffid)}  :  {self.username} :  {self.department}  : {self.location}: {self.email}"
+    
 class transaction(models.Model):
     transactionid=models.AutoField(primary_key=True)
     location=models.CharField(max_length=30)
     transaction_data=models.CharField(max_length=3000)
     transaction_state=models.CharField(max_length=11, default='incoming')
     timestamp = models.DateTimeField(default=timezone.now() + timezone.timedelta(hours=3))
-  
     def __str__(self):
         return f"{str(self.transactionid)} : {self.location} : {self.transaction_state}"
        

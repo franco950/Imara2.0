@@ -17,16 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include,re_path
-from testapp.views import home,transactions,alerts,reports,system,guidelines,blacklists,logout_view,feedback
-from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('accounts/', include('allauth.urls')),
-    path('accounts/2fa/', include('allauth_2fa.urls')),
+   
     path('admin/', admin.site.urls),
     path('', include('login.urls')),
-    #re_path(r'^.*', TemplateView.as_view(template_name='dashboard/build/index.html')),
     path('', include('testapp.urls'))
-    
-
 ]

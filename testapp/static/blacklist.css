@@ -9,6 +9,16 @@
     cursor: pointer;
 
 }
+#black{
+    margin-top:35px;
+}
+#labela{
+    margin-top:10px;
+}
+#transactionid{
+    
+    margin-bottom:20px;
+}
 button.modal-option {
     margin: 5px; /* Adjust the value to your preference */
 }

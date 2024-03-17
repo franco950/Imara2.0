@@ -28,9 +28,10 @@
             <li class="{% if request.path == 'blacklist/' %}active{% endif %}"><a href="{% url 'blacklist' %}">Blacklist</a></li>
             {% if allowed %}
             <li class="{% if request.path == 'adminpanel/' %}active{% endif %}"><a href="{% url 'adminpanel' %}">Admin</a></li>{% endif %}
+            <a href="#" id="support">Contact Support</a>
         </ul>
     </div>
-  
+    
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {

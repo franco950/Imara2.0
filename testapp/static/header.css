@@ -71,6 +71,11 @@ html {
     box-shadow: 3px 0 5px rgba(0, 0, 0, 0.1); /* Add box shadow to the right */
     
 }
+#support{
+    bottom:20px;
+    left:10px;
+    position:fixed;
+}
 #sideMenu ul {
     list-style-type: none;
     padding: 0;

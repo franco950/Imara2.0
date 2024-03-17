@@ -31,11 +31,10 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'allauth',
-    'allauth.account',
-    'allauth_2fa',
-    'django_otp',
-    'django_otp.plugins.otp_static',
+    # 'allauth',
+    # 'allauth.account',
+    # 'allauth_2fa',
+   
     
     'dbbackup',
     'login',
@@ -64,7 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
+    # 'allauth.account.middleware.AccountMiddleware',
     # 'testproject.middleware.AuthenticationMiddleware'
 ]
 
@@ -118,14 +117,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = [
+# AUTHENTICATION_BACKENDS = [
     
   
-    'allauth.account.auth_backends.AuthenticationBackend',
+#     # 'allauth.account.auth_backends.AuthenticationBackend',
     
-]
-ACCOUNT_2FA_ENABLED_METHODS = ['allauth_2fa.auth_methods.TOTP']
-ACCOUNT_2FA_METHOD_PROMPT = True
+# ]
+# ACCOUNT_2FA_ENABLED_METHODS = ['allauth_2fa.auth_methods.TOTP']
+# ACCOUNT_2FA_METHOD_PROMPT = True
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
