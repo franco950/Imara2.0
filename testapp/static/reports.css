@@ -129,7 +129,8 @@ thead th {
 
 /* Add lighter lines below the table data rows */
 tbody td {
-    
+    padding-top:10px;
+    padding-bottom:10px;
     padding-left: 10px;
     border-bottom: 1px solid #ccc; /* Light line color */
 }

@@ -152,15 +152,7 @@ def locator(request):
 
     return HttpResponse('User not logged in')     
 global_data={}
-# queryset=transaction.objects.all()
-# fields=['transactionid', 'location','timestamp', 'transaction_state']
-# filename='transactions.csv'
-# with open(filename, 'w', newline='') as csvfile:
-#             writer = csv.DictWriter(csvfile, fieldnames=fields)
-#             writer.writeheader()
 
-#             for obj in queryset:
-#                 writer.writerow({field: getattr(obj, field) for field in fields})
 
 
 
@@ -215,7 +207,7 @@ def transactions(request):
 def home(request):
     
     user = request.user
-    name=user.username
+    name=user.username+', role: '+user.department
     
     if user.is_authenticated:
         content={'set':name}
@@ -318,7 +310,7 @@ def home(request):
 @login_required
 def alerts(request):
     user = request.user
-    name=user.username
+    name=user.username+', role: '+user.department
     context={}
     if user.is_authenticated:
         content={'set':name}
@@ -348,27 +340,48 @@ def alerts(request):
             answer='female'
         trait_list={'first name':datas[12],'gender':answer,'amount':datas[3],'merchant_name':datas[13]}
         return trait_list
+    if request.method =='GET':
+        items = request.GET.get('item_value')
+        action = request.GET.get('action')
+        if action=='search':
+            try:
+                search=request.GET.get('searchkey')
+                form=request.GET.get('form')
+                if search=='transactionid':
+                    alertpage=alert.objects.filter(transactionid=form,transactionid__in=transactions)
+                if search=='alertid':
+                    alertpage=alert.objects.filter(alertid=form,transactionid__in=transactions)
+                if search=='staffid':
+                    alertpage=alert.objects.filter(staffid=form,transactionid__in=transactions)
+                
+            except Exception as e:
+                if "Field 'alertid' expected a number but got ''" in str(e):
+                    context['warning']='Please fill all fields'
+                    alertpage=alert.objects.filter(alert_status='waiting',transactionid__in=transactions)
+
+                
+                    
+            
     if request.method == 'POST':
         items = request.POST.get('item_value')
         action = request.POST.get('action')
-        items=items.split(';')
-        alertid=items[0].split(':')
-        myalertid=alertid[1]
+
+       
         if action=='reject':
-            alertchange=alert.objects.get(alertid=myalertid)
+            alertchange=alert.objects.get(alertid=items)
             alertchange.alert_status='rejected'
             alertchange.save()
             new_blacklist_entry = blacklist.objects.create(transactionid=alertchange.transactionid,
             category='true positive')
         if action=='approve':
-            alertchange=alert.objects.get(alertid=myalertid)
+            alertchange=alert.objects.get(alertid=items)
             alertchange.alert_status='approved'
             alertchange.save()
             new_entry = report.objects.create(transactionid=alertchange.transactionid,
             staffid=alertchange.staffid, report_status='false positive',verification='waiting')
             new_entry.save()
         if action=='traits':
-            alertchange=alert.objects.get(alertid=myalertid)
+            alertchange=alert.objects.get(alertid=items)
             customer_data=get_traits(alertchange.transactionid)
             context={'set':alertpage,'content':content,'statement':statement,'count':count,'customer_data':customer_data}
             filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',
@@ -378,13 +391,14 @@ def alerts(request):
             context['new_alerts']=new_alerts
             if user.is_staff == True:
                 context['allowed']=True
+       
             return render(request,'alertpage.html',context) 
       
             
-
+           
    
-
     context={'set':alertpage,'content':content,'statement':statement,'count':count}
+    
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
     global_data['new_alerts']=new_alerts
@@ -422,7 +436,7 @@ def feedback(request):
 def reports(request):
 
     user = request.user
-    name=user.username
+    name=user.username+', role: '+user.department
     
     
     content={'set':name}
@@ -437,11 +451,29 @@ def reports(request):
     time_view=[custom_start_date,' to ',custom_end_date]
     context['count']=entry_count
     context['time_view']=time_view
-    context['filter']=filter_reports
+    
+    if request.method =='GET':
+        items = request.GET.get('item_value')
+        action = request.GET.get('action')
+        if action=='search':
+            try:
+                search=request.GET.get('searchkey')
+                print(search)
+                form=request.GET.get('form')
+                print(form)
+                if search=='transactionid':
+                    filter_reports=report.objects.filter(transactionid=form,transactionid__in=filter_new_reports)
+                if search=='reportid':
+                    filter_reports=report.objects.filter(reportid=form,transactionid__in=filter_new_reports)
+                if search=='staffid':
+                    filter_reports=report.objects.filter(staffid=form,transactionid__in=filter_new_reports)
+                    
+            except Exception as e:
+               
+                filter_reports=report.objects.filter(transactionid__in=filter_new_reports,verification='waiting')
 
     if request.method == 'POST':
-        
-        
+    
         action=request.POST.get('action')
         report_transactionid = request.POST.get('transactionid')
         filter_reportid=request.POST.get('reportid')
@@ -487,12 +519,9 @@ def reports(request):
             selected.verification='approved'
             selected.save()
 
-        if action=='delete report':
+        if action=='delete':
             items=request.POST.get('item_value')
-            items=items.split(';')
-            reportid=items[0].split(':')
-            myreportid=reportid[1]
-            delete = get_object_or_404(report, reportid=myreportid)
+            delete = get_object_or_404(report, reportid=items)
             delete.delete()
 
         if action=='filter':
@@ -508,7 +537,7 @@ def reports(request):
             waiting=True
             context['waiting']=waiting
         
-    
+    context['filter']=filter_reports
 
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
@@ -523,35 +552,53 @@ def reports(request):
 @login_required
 def blacklists(request):
     user = request.user
-    name=user.username
+    name=user.username+', role: '+user.department
     if user.is_authenticated:
         content={'set':name}
         context={'content':content}
-    full_list=blacklist.objects.all()
-    count=full_list.count()
-    if count>0:
-        context['set']=full_list
-    else:
-        full_list='no entries to display'
-        context['set']=full_list
-
+    full_list=blacklist.objects.all()  
+   
+    if request.method =='GET':
+        items = request.GET.get('item_value')
+        action = request.GET.get('action')
+        if action=='search':
+            try:
+                search=request.GET.get('searchkey')
+                print(search)
+                form=request.GET.get('form')
+                print(form)
+                if search=='transactionid':
+                    full_list=blacklist.objects.filter(transactionid=form)
+                if search=='blacklistid':
+                     full_list=blacklist.objects.filter(blacklistid=form)
+                    
+            except Exception as e:
+               
+               full_list=blacklist.objects.all()
     if request.method == 'POST':
         action=request.POST.get('action')
         if action=='Add':
             transactionid=request.POST.get('transactionid')
             category=request.POST.get('category')
             list=[]
+            list2=[]
             x=transaction.objects.all().values_list('transactionid',flat=True)
+            y=blacklist.objects.all().values_list('transactionid',flat=True)
+            for all in y:
+                list2.append(all)
             for all in x:
                 list.append(all)
             if int(transactionid) in list:
-                try:
-                    new_entry=blacklist.objects.create(transactionid=transactionid,category=category)
-                    context['success']='Entry added successfully'
-                    
-                except Exception as e:
-                    if 'NOT NULL constraint failed: testapp_blacklist.category' in str(e):
-                        context['warning']='Please fill all fields'
+                if int(transactionid) in list2:
+                    context['error']='The transaction id already exists in the blacklist!'
+                else:
+                    try:
+                        new_entry=blacklist.objects.create(transactionid=transactionid,category=category)
+                        context['success']='Entry added successfully'
+                        
+                    except Exception as e:
+                        if 'NOT NULL constraint failed: testapp_blacklist.category' in str(e):
+                            context['warning']='Please fill all fields'
             else:
                 context['warning']='The transaction id is not found in the transactions database'
         if action=='change':
@@ -563,8 +610,6 @@ def blacklists(request):
                 print(cat)
                 changes.category=cat
                 changes.save()
-
-
             except Exception as e:
                 if 'No blacklist matches the given query.' in str(e):
                     pass
@@ -573,24 +618,26 @@ def blacklists(request):
             delete = get_object_or_404(blacklist, blacklistid=items)
             delete.delete()
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
-    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
-    
+    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()   
     context['new_alerts']=new_alerts
     if user.is_staff == True:
         context['allowed']=True
-    
+    count=full_list.count()
+    context['count']=count
+    if count>0:
+        context['set']=full_list
+    else:
+        full_list='no entries to display'
+        context['set']=full_list
     return render(request,'blacklist.html',context)
 
 @login_required
-def system(request):
-  
-    
+def system(request):  
     user = request.user
     name=user.username
     if user.is_authenticated:
         content={'set':name}
-    settings = None
-    
+    settings = None  
     if request.method == 'POST':
         name = request.POST.get('name')
         
@@ -601,7 +648,6 @@ def system(request):
                 settings, created = systemsettings.objects.get_or_create(settings_class='general')
             else:
                 settings, created = systemsettings.objects.get_or_create(settings_class='specific')
-
         else:
            
             settings, created = systemsettings.objects.get_or_create(settings_class='general')
@@ -623,9 +669,7 @@ def system(request):
                 settings.blacklist_add = ",".join(blacklist_add)
             elif name == 'report_add':
                 report_add = request.POST.get('reports')
-                settings.report_add = report_add
-
-       
+                settings.report_add = report_add       
             settings.save()
     filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
     new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
@@ -652,9 +696,9 @@ def adminpanel(request):
                'email', 'is_staff', 'is_active', 'date_joined', 'staffid', 'department', 'location',
                  'groups', 'user_permissions']
     user = request.user
-    name=user.username
+    name=user.username+', role: '+user.department
+    content={'set':name}  
     dept=user.department
-
     levels={'admin':1,'support_staff':2,'manager':3,'agent':4}
     roles=['admin','support_staff','manager','agent']
     under={}
@@ -663,7 +707,7 @@ def adminpanel(request):
             under[all]=all
     print(under)
     loc= locator(request).get('staff_stations')
-    context={'set':name,'dept':dept,'loc':loc,'under':under}
+    context={'content':content,'dept':dept,'loc':loc,'under':under}
     if user.department=='admin':
         context['administrator']=True
    
@@ -676,10 +720,7 @@ def adminpanel(request):
 
     context['list']=userlist
     if request.method == 'POST':
-        action=request.POST.get('action')
-        
-        
-        
+        action=request.POST.get('action')  
         if action=='create':
             try:
                 locationa=request.POST.get('location'),
@@ -714,7 +755,6 @@ def adminpanel(request):
         if action=='change user':
             item=request.POST.get('staffid')
             print(item)
-            # try:
             locationa=request.POST.get('location'),
             userlocation=[]
             for all in locationa:
@@ -725,8 +765,7 @@ def adminpanel(request):
             else:
                 userloc=userlocation+station
             new_user=CustomUser.objects.get(staffid=item)
-            print(new_user)
-            
+            print(new_user)           
             username=request.POST.get('username'),
             for all in username:
                 new_user.username=all
@@ -746,22 +785,9 @@ def adminpanel(request):
             for all in department:
                 new_user.department=all
             new_user.location=userloc
-            print(new_user)
-            
-            new_user.save()
-            
-        
+            print(new_user)           
+            new_user.save()                    
             context['success']='! user changed successfully'
-            # except Exception as e:
-            #     if 'UNIQUE constraint failed: testapp_customuser.username' in str(e):
-            #         context['warning']='error! The username is taken, please use another one'
-            #     elif 'UNIQUE constraint failed: testapp_customuser.staffid' in str(e):
-            #         context['warning']='error! The staff Id needs to be unique'
-            #     elif 'Python int too large to convert to SQLite INTEGER' in str(e):
-            #         context['warning']='error! please use 4 to 8 digitsfor the staffid(1000 to 10000000)'
-            #     else:
-            #         context['warning']='error! all form fields must be filled accoring to the type specified'
-            #         context['error']=e
         if action=='delete':
             item=request.POST.get('item_value')
             try:
@@ -769,17 +795,9 @@ def adminpanel(request):
                 entry.delete()
             except:
                 pass
-                
-            
-    
-    
     return render(request,'users.html',context)
-
-
 def logout_view(request):
     logout(request)
     login_url = reverse('login')  
     response = redirect(login_url)
-    
-   
     return response

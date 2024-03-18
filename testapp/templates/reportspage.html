@@ -3,6 +3,22 @@
 
 <body>
     <div id="main"><div id="title"> <h2>Reports</h2> <button id="add" onclick=" openModal(event)">Create report</button></div>
+    <div class="card" id="search">
+        <b>Search</b>
+        <form method="get"><label for="searchkey"> Key words:</label>
+           
+            <select id="searchkey" name="searchkey">
+                <option value="reportid">Report Id</option>
+                <option value="transactionid">Transaction Id</option>
+                <option value="staffid">Staff Id</option>
+                
+            </select>
+            <label for="form"> Value</label>
+            <input id="form" type="number" name="form">
+            <input type="submit" name="action" value="search">
+        </form>
+       
+    </div>
         
         <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
@@ -34,15 +50,7 @@
                 </div>
             
 
-            <!-- For Stations -->
-            <!-- <button id="showStationsBtn" type="button">Location view</button>Filtered values:{{general_stats.filtered_stations}}<br>
-            <div id="station-dropdown" style="display: none;">
-                {% for item in general_stats.stations %}
-                    <label>
-                        <input type="checkbox" name="stations" value="{{ item }}" selected> {{ item }}<br>
-                    </label>
-                {% endfor %}
-            </div><br> -->
+        
 
             <button type="submit" class="approve-btn" value="submit">Apply</button>
         </form>
@@ -81,7 +89,7 @@
                 <th>Report Status</th>
                 <th>Timestamp</th>
                 {% if allowed %}
-                <th>Actions</th>
+                <th>Actions</th><th></th>
                 {% endif %}
             </tr>
         </thead>
@@ -92,19 +100,20 @@
                     <td>{{ items.transactionid }}</td>
                     <td>{{ items.staffid }}</td>
                     <td>{{ items.report_status}}</td>
-                    <td>{{ items.timestamp }}</td>
+                    <td>{{ items.timestamp }}</td>{% if items.verification == 'waiting' %}
                     {% if waiting %}
                     {% if allowed %}
                     <td>
                         <form method="post" action="{% url 'reports' %}">
                             <input type="hidden" name="item_value" value="{{ items }}">
                             {% csrf_token %}
-                           
                             <button type="submit" class="approve-btn" name="action" value="verify">Verify Report</button>
-                           
-                        </form>
+                        </form></td><td>
+                        <form method="post" action="{% url 'reports' %}">{% csrf_token %}
+                            <input type="hidden" name="item_value" value='{{ items.reportid}}'>
+                        <button type="submit"id='delete' class="reject-btn" name="action" value="delete"  >Delete Report</form></td>  
                     </td>
-                    {% endif %}{% endif %}
+                    {% else %}<td>{{ items.verification }}</td>{% endif %}{% endif %}{% else %}<td>{{ items.verification }}</td>{% endif %}
                 </tr>
             {% endfor %}
         </tbody>

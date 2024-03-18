@@ -15,6 +15,22 @@
         <div id="title">
             <h3>Alerts</h3>{{statement.set}}
         </div>
+        <div class="card" id="search">
+            <b>Search</b>
+            <form method="get"><label for="searchkey"> Key words:</label>
+               
+                <select id="searchkey" name="searchkey">
+                    <option value="alertid">Alert Id</option>
+                    <option value="transactionid">Transaction Id</option>
+                    <option value="staffid">Staff Id</option>
+                </select>
+                <label for="form"> Value</label>
+                <input id="form" type="number" name="form">
+                <input type="submit" name="action" value="search">
+            </form>
+           
+        </div>
+        
         {% if count %}
         <div class="modal" id="deleteModal">
             <div class="modal-content" id="deleteModalContent">
@@ -38,12 +54,12 @@
                         <th>Timestamp</th>
                         <th>Action</th>
                         <th>
-                            Selected<input type="checkbox" id="selectAllCheckbox">
+                            <!-- Selected<input type="checkbox" id="selectAllCheckbox"> -->
                         </th>
                         <th>
                             <div id="modalButtonsContainer" style="display: none;">
-                                <a href="#" id="showModalButtonsLink"><img src="{% static 'options_13525834.png' %}" id='menudots'></a>
-                            </div>
+                                <!-- <a href="#" id="showModalButtonsLink"><img src="{% static 'options_13525834.png' %}" id='menudots'></a>
+                            </div> -->
                         </th>
                     </tr>
                 </thead>
@@ -55,17 +71,17 @@
                         <td>{{ items.transactionid }}</td>
                         <td>{{ items.staffid }}</td>
                         <td>{{ items.timestamp }}</td>
-                        <td>
+                        <td>{% if items.alert_status == 'waiting' %}
                             <form method="post" action="{% url 'alerts' %}">
-                                <input type="hidden" name="item_value" value="{{ items }}">
+                                <input type="hidden" name="item_value" value="{{ items.alertid }}">
                                 {% csrf_token %}
                                 
                                 <button type="submit" class="approve-btn" name="action" value="approve">Approve transaction</button>
                                 <button type="submit" class="reject-btn" name="action" value="reject">Stop transaction</button>
-                            </form>
+                            </form>{% else %}{{ items.alert_status }}{% endif %}
                         </td>
                         <td>
-                            <input type="checkbox" class="itemCheckbox" data-item-id="{{ items.alertid }}" style="display: none;">
+                            <!-- <input type="checkbox" class="itemCheckbox" data-item-id="{{ items.alertid }}" style="display: none;"> -->
                         </td>
                         <td><a href="#"  onclick="openContactInfoModal(JSON.parse(document.getElementById('customer_data').textContent))"><img src="{% static 'options_13525834.png' %}" id='menudots'> </td>
                     </tr>

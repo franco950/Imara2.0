@@ -11,6 +11,20 @@
             {% if success %}<p style="color: green;">{{success}}</p>{% endif %}
             {% if error %}<p style="color: red;">{{error}}</p>{% endif %}
         </div>
+        <div class="card" id="search">
+            <b>Search</b>
+            <form method="get"><label for="searchkey"> Key words:</label>
+                
+                <select id="searchkey" name="searchkey">
+                    <option value="blacklistid">Blacklist Id</option>
+                    <option value="transactionid">Transaction Id</option>
+                </select>
+                <label for="form"> Value</label>
+                <input id="form" type="number" name="form">
+                <input type="submit" name="action" value="search">
+            </form>
+           
+        </div>
         <div id="formModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeForm()">&times;</span>
@@ -33,7 +47,9 @@
                 <p id="modalMessage"></p>
             </div>
         </div>
+       
         <div class="card" style="background-color: #ffffff;">
+            Item count:{{count}}
             <table id="myTable">
                 <thead>
                     <tr>
