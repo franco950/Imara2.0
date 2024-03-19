@@ -3,8 +3,10 @@ from django.shortcuts import render, redirect,get_object_or_404
 from testapp.models import transaction,alert,report,blacklist,systemsettings,CustomUser
 import numpy as np
 import joblib 
+from .forms import RegistrationForm
 import csv
 from django.db import IntegrityError
+from django.contrib.auth.password_validation import validate_password
 from django.urls import reverse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -108,25 +110,25 @@ for alll in tra:
         
     
     newid=alll.transactionid
-    if done:
-        if done==0:
-            pred='legitimate'
+ 
+    if done==0:
+        pred='legitimate'
+        alll.transaction_state='predicted'
+        alll.save()
+        
+    elif done==1:
+        pred='fraud'
+        transactlocation=alll.location
+        try:
+            userd=CustomUser.objects.get(location=transactlocation, department='agent')
+            mystaffid = userd.staffid
+            new_entry = alert.objects.create( transactionid=alll.transactionid,
+                                            staffid=mystaffid, alert_status='waiting')
+            new_entry.save()
             alll.transaction_state='predicted'
             alll.save()
-            
-        elif done==1:
-            pred='fraud'
-            transactlocation=alll.location
-            try:
-                userd=CustomUser.objects.get(location=transactlocation, department='agent')
-                mystaffid = userd.staffid
-                new_entry = alert.objects.create( transactionid=alll.transactionid,
-                                                staffid=mystaffid, alert_status='waiting')
-                new_entry.save()
-                alll.transaction_state='predicted'
-                alll.save()
-            except:
-                pass
+        except:
+            pass
 
 all_stations=['Kiambu01','Kiambu02','Online01','Thika01','Thika02','Online02','Kiambu03']
 all_locations=['Kiambu','Thika','Online']  
@@ -691,6 +693,7 @@ def guidelines(request):
 
 @login_required
 def adminpanel(request):
+  
     fields=['emailaddress', 'totpdevice', 'staticdevice', 'auth_token', 'logentry', 'id',
              'password', 'last_login', 'is_superuser', 'username', 'first_name', 'last_name',
                'email', 'is_staff', 'is_active', 'date_joined', 'staffid', 'department', 'location',
@@ -705,7 +708,7 @@ def adminpanel(request):
     for all in roles:
         if levels[all]>levels[dept]:
             under[all]=all
-    print(under)
+    
     loc= locator(request).get('staff_stations')
     context={'content':content,'dept':dept,'loc':loc,'under':under}
     if user.department=='admin':
@@ -719,10 +722,72 @@ def adminpanel(request):
         userlist=CustomUser.objects.filter(location__in= locator(request).get('staff_stations'))
 
     context['list']=userlist
+    
     if request.method == 'POST':
         action=request.POST.get('action')  
         if action=='create':
+            form = RegistrationForm(request.POST)
+            if form.is_valid():
+                form.save()
+            else:
+                
+                context['form'] = form
+    
+                
+           
+         
+                
+          
+
+
+                # Extract form data
+                    
+                
+                # Create user with validated password
+                    # user = CustomUser.objects.create_user(
+                    # username=username,
+                    # email=email,
+                    # password=password,
+                    # is_active=is_active,
+                    # staffid=staffid,
+                    # department=department,
+                    # location=location)
+                    
+                    
+            #     locationa=request.POST.get('location'),
+            #     userlocation=[]
+            #     for all in locationa:
+            #         userlocation=all
+            #     station=request.POST.get('station')
+            #     if station=='both':
+            #         userloc=userlocation
+            #     else:
+            #         userloc=userlocation+station
+            #     new_user=CustomUser.objects.create(username=request.POST.get('username'),
+                
+            #     email=request.POST.get('email'),
+            #     is_active=request.POST.get('active'),
+            #     staffid=request.POST.get('staffid'),
+            #     department=request.POST.get('department'),
+            #     location=userloc,
+            #     password=request.POST.get('password'))
+            #     new_user.save()
+            #     context['success']='! new user created successfully'
+            # except Exception as e:
+            #     if 'UNIQUE constraint failed: testapp_customuser.username' in str(e):
+            #         context['warning']='error! The username is taken, please use another one'
+            #     elif 'UNIQUE constraint failed: testapp_customuser.staffid' in str(e):
+            #         context['warning']='error! The staff Id needs to be unique'
+            #     elif 'Python int too large to convert to SQLite INTEGER' in str(e):
+            #         context['warning']='error! please use 4 to 8 digitsfor the staffid(1000 to 10000000)'
+            #     else:
+            #         context['warning']='error! all form fields must be filled accoring to the type specified'
+            #         context['error']=e
+        if action=='change user':
             try:
+                staf=request.POST.get('item_value')
+                item=request.POST.get('staffid')
+            
                 locationa=request.POST.get('location'),
                 userlocation=[]
                 for all in locationa:
@@ -732,16 +797,30 @@ def adminpanel(request):
                     userloc=userlocation
                 else:
                     userloc=userlocation+station
-                new_user=CustomUser.objects.create(username=request.POST.get('username'),
+                new_user=CustomUser.objects.get(staffid=staf)
+                print(new_user)           
+                username=request.POST.get('username'),
+                for all in username:
+                    new_user.username=all
+                print(new_user.username)
                 
                 email=request.POST.get('email'),
-                is_active=request.POST.get('active'),
+                for all in email:
+                    new_user.email=all
+                active=request.POST.get('active'),
+                for all in active:
+                    new_user.is_active=all
+                print(new_user.is_active)
                 staffid=request.POST.get('staffid'),
+                for all in staffid:
+                    new_user.staffid=all
                 department=request.POST.get('department'),
-                location=userloc,
-                password=request.POST.get('password'))
-                new_user.save()
-                context['success']='! new user created successfully'
+                for all in department:
+                    new_user.department=all
+                new_user.location=userloc
+                print(new_user)           
+                new_user.save()                    
+                context['success']='! user changed successfully'
             except Exception as e:
                 if 'UNIQUE constraint failed: testapp_customuser.username' in str(e):
                     context['warning']='error! The username is taken, please use another one'
@@ -752,42 +831,6 @@ def adminpanel(request):
                 else:
                     context['warning']='error! all form fields must be filled accoring to the type specified'
                     context['error']=e
-        if action=='change user':
-            item=request.POST.get('staffid')
-            print(item)
-            locationa=request.POST.get('location'),
-            userlocation=[]
-            for all in locationa:
-                userlocation=all
-            station=request.POST.get('station')
-            if station=='both':
-                userloc=userlocation
-            else:
-                userloc=userlocation+station
-            new_user=CustomUser.objects.get(staffid=item)
-            print(new_user)           
-            username=request.POST.get('username'),
-            for all in username:
-                new_user.username=all
-            print(new_user.username)
-            
-            email=request.POST.get('email'),
-            for all in email:
-                new_user.email=all
-            active=request.POST.get('active'),
-            for all in active:
-                new_user.is_active=all
-            print(new_user.is_active)
-            staffid=request.POST.get('staffid'),
-            for all in staffid:
-                new_user.staffid=all
-            department=request.POST.get('department'),
-            for all in department:
-                new_user.department=all
-            new_user.location=userloc
-            print(new_user)           
-            new_user.save()                    
-            context['success']='! user changed successfully'
         if action=='delete':
             item=request.POST.get('item_value')
             try:
@@ -795,9 +838,202 @@ def adminpanel(request):
                 entry.delete()
             except:
                 pass
+    else:
+        form = RegistrationForm()
+        context['form']=form
+   
     return render(request,'users.html',context)
 def logout_view(request):
     logout(request)
     login_url = reverse('login')  
     response = redirect(login_url)
     return response
+
+from django.http import HttpResponse
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from .models import CustomUser
+
+
+def staff_report(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="staff_report.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+    title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
+    title_text = 'IMARA BANK ' % logo
+    title = Paragraph(title_text, style=title_style)
+    elements.append(title)
+
+    users = CustomUser.objects.all()
+
+    table_data = [['username','staffid','location','department', 'email']]
+    for user in users:
+        table_data.append([user.username, user.staffid, user.location, user.department, user.email])
+
+    table = Table(table_data)
+
+    style = TableStyle([('BACKGROUND', (0,0), (-1,0), colors.grey),
+                        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0,0), (-1,0), 14),
+                        ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                        ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                        ('GRID', (0,0), (-1,-1), 1, colors.black)])
+
+    table.setStyle(style)
+
+    elements = []
+    elements.append(table)
+    doc.build(elements)
+
+    return response
+
+def false_report(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="false_report.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+    title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
+    title_text = 'IMARA BANK ' % logo
+    title = Paragraph(title_text, style=title_style)
+    elements.append(title)
+
+    users = report.objects.all()
+
+    table_data = [['reportid','transactionid','staffid','report_status','verification', 'timestamp']]
+    for user in users:
+        table_data.append([user.reportid, user.transactionid, user.staffid, user.report_status, user.verification, user.timestamp])
+
+    table = Table(table_data)
+
+    style = TableStyle([('BACKGROUND', (0,0), (-1,0), colors.grey),
+                        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0,0), (-1,0), 14),
+                        ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                        ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                        ('GRID', (0,0), (-1,-1), 1, colors.black)])
+
+    table.setStyle(style)
+
+    elements = []
+    elements.append(table)
+    doc.build(elements)
+
+    return response
+
+
+
+
+def alerts_report(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="alerts_report.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+    title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
+    title_text = 'IMARA BANK ' % logo
+    title = Paragraph(title_text, style=title_style)
+    elements.append(title)
+
+    clients = alert.objects.all()
+
+    table_data = [['alertid', 'transactionid','staffid', 'alert_status', 'timestamp']]
+    for client in clients:
+        table_data.append([client.alertid, client.transactionid, client.staffid, client.alert_status, client.timestamp])
+
+    table = Table(table_data)
+
+    style = TableStyle([('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0,0), (-1,0), 14),
+                    ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                    ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                    ('GRID', (0,0), (-1,-1), 1, colors.black)])
+    table.setStyle(style)
+
+    elements = []
+    elements.append(table)
+    doc.build(elements)
+
+    return response
+
+from django.conf import settings
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch, cm
+from reportlab.lib import colors
+from .models import Worker
+
+def transactions_report(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="transactions_report.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+
+    # Add the logo and title
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+    title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
+    title_text = 'IMARA BANK ' % logo
+    title = Paragraph(title_text, style=title_style)
+    elements.append(title)
+
+
+    # Add the subheader
+    subheader_style = ParagraphStyle('SubheaderStyle', fontSize=14, fontName='Helvetica-Bold', underlineWidth=1, underlineColor=colors.black)
+    subheader_text = 'Detailed Transactions Report'
+    subheader = Paragraph(subheader_text, style=subheader_style)
+    elements.append(subheader)
+
+    # Add the description
+    description_style = ParagraphStyle('DescriptionStyle', fontSize=9, fontName='Helvetica')
+    workers_count =transaction.objects.count()
+    description_text = 'All: %d Transactions' % workers_count
+    description = Paragraph(description_text, style=description_style)
+    elements.append(description)
+
+    # Create the table data
+    workers = transaction.objects.all()
+    table_data = [['transactionid', 'location', 'transaction_state', 'timestamp']]
+    for i, worker in enumerate(workers, start=1):
+        table_data.append([
+            str(i),
+            worker.transactionid,
+            worker.location,
+            worker.transaction_state,
+            worker.timestamp,
+           
+        ])
+
+    # Create the table and apply styles
+    table = Table(table_data)
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.dimgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 19),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ])
+    table.setStyle(table_style)
+    elements.append(table)
+
+    doc.build(elements)
+
+    return response
+

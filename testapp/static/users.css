@@ -82,6 +82,8 @@ body{
     background-color: #fff;
     box-shadow: 0 0 10px rgba(235, 205, 205, 0.1);
     z-index: 999;
+    width: 400px;
+    height:650px;
 }
 
 
@@ -141,10 +143,37 @@ body{
     background-color: #a4a8dd;/*#dc3545;/*#ff5252;/*#9a031e; /*#ff0054;*/
     color:white;
 }
+form {
+    width: 55%;
+    margin: 0 auto;
+}
 
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="checkbox"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
 .modal-content {
     position: relative;
-    width: 400px;
+   
     background-color: #fff;
     margin: 5px auto;
     padding: 20px;
