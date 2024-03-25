@@ -122,7 +122,17 @@ html {
     display: inline-block;
     margin-right: 10px; /* Adjust margin as needed for spacing */
 }
-
+.approve-btn {
+    border-radius: 8px;
+    background-color: #a4a8dd;/*#a4a8dd;*/
+    color: white;
+    margin-right: 10px;
+    padding: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border: none;
+    cursor: pointer;
+}
 /* Style for buttons */
 #showTimeViewBtn {
     display: inline-block;

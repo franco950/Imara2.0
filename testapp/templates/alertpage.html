@@ -13,8 +13,10 @@
     </script>
     <div id="main">
         <div id="title">
-            <h3>Alerts</h3>{{statement.set}}
-        </div>
+            <h3>Alerts</h3>{{statement.set}} 
+           
+           
+        </div><div class="card" id="search"><a href="{% url 'alerts_report' %}" class="approve-btn">Generate Alerts Report</a></div>
         <div class="card" id="search">
             <b>Search</b>
             <form method="get"><label for="searchkey"> Key words:</label>
@@ -27,6 +29,7 @@
                 <label for="form"> Value</label>
                 <input id="form" type="number" name="form">
                 <input type="submit" name="action" value="search">
+                <input type="submit" name="action" value="Get Report">
             </form>
            
         </div>

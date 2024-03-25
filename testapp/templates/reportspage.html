@@ -2,7 +2,8 @@
 <link rel="stylesheet" href="{% static 'reports.css' %}" >
 
 <body>
-    <div id="main"><div id="title"> <h2>Reports</h2> <button id="add" onclick=" openModal(event)">Create report</button></div>
+    <div id="main"><div id="title"> <h2>Reports</h2> <button id="add" onclick=" openModal(event)">Create report entry</button> <a href="{% url 'false_report' %}" id="add">Generate Detailed Report</a></div>
+   
     <div class="card" id="search">
         <b>Search</b>
         <form method="get"><label for="searchkey"> Key words:</label>
@@ -16,15 +17,16 @@
             <label for="form"> Value</label>
             <input id="form" type="number" name="form">
             <input type="submit" name="action" value="search">
+            <input type="submit" name="action" value="Get Report">
         </form>
        
     </div>
         
-        <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
+        <!-- <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
 
 
-            <div id="filter" class="card " ><h3>Filter Reports</h3>
+          <div id="filter" class="card " ><h3>Filter Reports</h3>
                 <button id="showCustomTimeBtn" type="button">Filter by</button>{% if time_view %}Filtered values:{{time_view}}{{endif}}<br>
                 <div id="custom-time-dropdown" style="display: none;">
                     <label for="custom_start_date">Start Date:</label>
@@ -48,12 +50,12 @@
                   
                     <button id="customTimeSubmitBtn" type="button">Apply</button>
                 </div>
-            
+             -->
 
         
-
-            <button type="submit" class="approve-btn" value="submit">Apply</button>
-        </form>
+<!-- 
+            <button type="submit" class="approve-btn" value="submit">Apply</button> -->
+     
 
     <p>
        

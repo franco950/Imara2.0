@@ -4,10 +4,10 @@
 <link rel="stylesheet" href="{% static 'users.css' %}" >
 
 <body>
-
+    
     <div id="main">
         <div id="title">
-            <h3>Users</h3>
+            <h3>Users</h3><a href="{% url 'staff_report' %}" class="approve-btn">Generate Staff Report</a>
            
                 <!-- <label for="username"><b>Username:</b></label><br>
                 <input type="text" id="username" name="username" required><br>
@@ -193,6 +193,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+        
         </div>
         
 

@@ -12,6 +12,7 @@
 
 <body>
     <div id="main" style="background-color: #ffffff;"><p><h3>Filter Statistics</h3></p>
+      
 
         <form id="dataCollectionForm"onsubmit="submitForm(event)"method='post' >
             {% csrf_token %}
@@ -52,7 +53,8 @@
             </div><br>
 
             <button type="submit" value="submit">Filter</button>
-        </form>
+        </form><br>
+        <a href="{% url 'transactions_report' %}" class="approve-btn">Generate transactions Report</a>
     </div>
 
   <br>

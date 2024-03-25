@@ -6,7 +6,7 @@
     <div id="main">
         <div id="title">
             <h3>Blacklist</h3> 
-            <button id="add" onclick=" openForm('formModal')">Add to blacklist</button>
+            <button id="add" onclick=" openForm('formModal')">Add to blacklist</button><a href="{% url 'blacklist_report' %}" class="approve-btn">Generate Blacklist Report</a>
             {% if warning %}<p style="color: red;">{{warning}}</p>{% endif %}
             {% if success %}<p style="color: green;">{{success}}</p>{% endif %}
             {% if error %}<p style="color: red;">{{error}}</p>{% endif %}
@@ -22,6 +22,7 @@
                 <label for="form"> Value</label>
                 <input id="form" type="number" name="form">
                 <input type="submit" name="action" value="search">
+                <input type="submit" name="action" value="Get Report">
             </form>
            
         </div>

@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect,get_object_or_404
 from testapp.models import transaction,alert,report,blacklist,systemsettings,CustomUser
 import numpy as np
 import joblib 
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Image
 from .forms import RegistrationForm
 import csv
 from django.db import IntegrityError
@@ -347,19 +349,42 @@ def alerts(request):
         action = request.GET.get('action')
         if action=='search':
             try:
+                
                 search=request.GET.get('searchkey')
                 form=request.GET.get('form')
                 if search=='transactionid':
                     alertpage=alert.objects.filter(transactionid=form,transactionid__in=transactions)
+                    
                 if search=='alertid':
                     alertpage=alert.objects.filter(alertid=form,transactionid__in=transactions)
+                
                 if search=='staffid':
                     alertpage=alert.objects.filter(staffid=form,transactionid__in=transactions)
+                  
                 
             except Exception as e:
                 if "Field 'alertid' expected a number but got ''" in str(e):
                     context['warning']='Please fill all fields'
                     alertpage=alert.objects.filter(alert_status='waiting',transactionid__in=transactions)
+               
+        if action=='Get Report':
+            try:
+                table_data= [['alertid', 'transactionid','staffid', 'alert_status', 'timestamp']]
+                search=request.GET.get('searchkey')
+                form=request.GET.get('form')
+                if search=='transactionid':
+                    alertpage=alert.objects.filter(transactionid=form,transactionid__in=transactions)
+                    return any_report(request, alertpage, table_data)
+                if search=='alertid':
+                    alertpage=alert.objects.filter(alertid=form,transactionid__in=transactions)
+                    return any_report(request, alertpage, table_data)
+                if search=='staffid':
+                    alertpage=alert.objects.filter(staffid=form,transactionid__in=transactions)
+                    return any_report(request, alertpage, table_data)
+                
+            except:
+                pass
+            
 
                 
                     
@@ -473,6 +498,26 @@ def reports(request):
             except Exception as e:
                
                 filter_reports=report.objects.filter(transactionid__in=filter_new_reports,verification='waiting')
+        if action=='Get Report':
+            try:
+                table_data=[['reportid','transactionid','staffid','report_status','verification', 'timestamp']]
+                search=request.GET.get('searchkey')
+                print(search)
+                form=request.GET.get('form')
+                print(form)
+                if search=='transactionid':
+                    filter_reports=report.objects.filter(transactionid=form,transactionid__in=filter_new_reports)
+                    return any_report(request, filter_reports, table_data)
+                if search=='reportid':
+                    
+                    filter_reports=report.objects.filter(reportid=form,transactionid__in=filter_new_reports)
+                    return any_report(request, filter_reports, table_data)
+                if search=='staffid':
+                    filter_reports=report.objects.filter(staffid=form,transactionid__in=filter_new_reports)
+                    return any_report(request, filter_reports, table_data)
+                    
+            except:
+                pass
 
     if request.method == 'POST':
     
@@ -573,6 +618,21 @@ def blacklists(request):
                     full_list=blacklist.objects.filter(transactionid=form)
                 if search=='blacklistid':
                      full_list=blacklist.objects.filter(blacklistid=form)
+            except:
+                pass
+        if action=='Get Report':
+            try:
+                table_data = [['blacklistid', 'transactionid','category']]
+                search=request.GET.get('searchkey')
+                print(search)
+                form=request.GET.get('form')
+                print(form)
+                if search=='transactionid':
+                    full_list=blacklist.objects.filter(transactionid=form)
+                    return any_report(request, full_list, table_data)
+                if search=='blacklistid':
+                    full_list=blacklist.objects.filter(blacklistid=form)
+                    return any_report(request, full_list, table_data)
                     
             except Exception as e:
                
@@ -699,7 +759,7 @@ def adminpanel(request):
                'email', 'is_staff', 'is_active', 'date_joined', 'staffid', 'department', 'location',
                  'groups', 'user_permissions']
     user = request.user
-    name=user.username+', role: '+user.department
+    name=user.username +' , role: '+user.department
     content={'set':name}  
     dept=user.department
     levels={'admin':1,'support_staff':2,'manager':3,'agent':4}
@@ -841,7 +901,10 @@ def adminpanel(request):
     else:
         form = RegistrationForm()
         context['form']=form
-   
+    filter_new_alerts = transaction.objects.filter(location__in= locator(request).get('staff_stations')).values_list('transactionid',flat=True)
+    new_alerts=alert.objects.filter(alert_status='waiting',transactionid__in=filter_new_alerts).count()
+    global_data['new_alerts']=new_alerts
+    content['new_alerts']=new_alerts   
     return render(request,'users.html',context)
 def logout_view(request):
     logout(request)
@@ -853,18 +916,20 @@ from django.http import HttpResponse
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from .models import CustomUser
-
+from reportlab.platypus import Spacer
 
 def staff_report(request):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="staff_report.pdf"'
-
+    elements = []
     doc = SimpleDocTemplate(response, pagesize=letter)
     doc = SimpleDocTemplate(response, pagesize=letter)
-    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+   
+    logo_path = "testapp/static/imarasmall.png"
+    logo = Image(logo_path, width=170, height=90)  # Adjust width and height as needed
+    elements.append(logo)
     title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
-    title_text = 'IMARA BANK ' % logo
+    title_text = 'IMARA BANK ' 
     title = Paragraph(title_text, style=title_style)
     elements.append(title)
 
@@ -882,26 +947,32 @@ def staff_report(request):
                         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
                         ('FONTSIZE', (0,0), (-1,0), 14),
                         ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                        
                         ('BACKGROUND', (0,1), (-1,-1), colors.beige),
                         ('GRID', (0,0), (-1,-1), 1, colors.black)])
 
     table.setStyle(style)
 
-    elements = []
+    spacer = Spacer(1, 20)  # Adjust the height value
+    elements.append(spacer)
     elements.append(table)
+  
     doc.build(elements)
 
     return response
 
 def false_report(request):
+    elements = []
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="false_report.pdf"'
 
     doc = SimpleDocTemplate(response, pagesize=letter)
     doc = SimpleDocTemplate(response, pagesize=letter)
-    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+    logo_path = "testapp/static/imarasmall.png"
+    logo = Image(logo_path, width=170, height=90)  # Adjust width and height as needed
+    elements.append(logo)
     title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
-    title_text = 'IMARA BANK ' % logo
+    title_text = 'IMARA BANK '
     title = Paragraph(title_text, style=title_style)
     elements.append(title)
 
@@ -924,23 +995,25 @@ def false_report(request):
 
     table.setStyle(style)
 
-    elements = []
+
+    spacer = Spacer(1, 20)  # Adjust the height value
+    elements.append(spacer)
     elements.append(table)
     doc.build(elements)
 
     return response
 
-
-
-
 def alerts_report(request):
+    elements = []
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="alerts_report.pdf"'
 
     doc = SimpleDocTemplate(response, pagesize=letter)
-    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+    logo_path = "testapp/static/imarasmall.png"
+    logo = Image(logo_path, width=170, height=90)  # Adjust width and height as needed
+    elements.append(logo)
     title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
-    title_text = 'IMARA BANK ' % logo
+    title_text = 'IMARA BANK ' 
     title = Paragraph(title_text, style=title_style)
     elements.append(title)
 
@@ -962,7 +1035,9 @@ def alerts_report(request):
                     ('GRID', (0,0), (-1,-1), 1, colors.black)])
     table.setStyle(style)
 
-    elements = []
+   
+    spacer = Spacer(1, 20)  # Adjust the height value
+    elements.append(spacer)
     elements.append(table)
     doc.build(elements)
 
@@ -974,7 +1049,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, cm
 from reportlab.lib import colors
-from .models import Worker
+
 
 def transactions_report(request):
     response = HttpResponse(content_type='application/pdf')
@@ -985,9 +1060,11 @@ def transactions_report(request):
 
     # Add the logo and title
     doc = SimpleDocTemplate(response, pagesize=letter)
-    logo = settings.STATIC_ROOT + "{% static 'imarasmall.png' %}"
+    logo_path = "testapp/static/imarasmall.png"
+    logo = Image(logo_path, width=170, height=90)  # Adjust width and height as needed
+    elements.append(logo)
     title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
-    title_text = 'IMARA BANK ' % logo
+    title_text = 'IMARA BANK ' 
     title = Paragraph(title_text, style=title_style)
     elements.append(title)
 
@@ -996,7 +1073,11 @@ def transactions_report(request):
     subheader_style = ParagraphStyle('SubheaderStyle', fontSize=14, fontName='Helvetica-Bold', underlineWidth=1, underlineColor=colors.black)
     subheader_text = 'Detailed Transactions Report'
     subheader = Paragraph(subheader_text, style=subheader_style)
+    spacer = Spacer(1, 7)  # Adjust the height value
+    elements.append(spacer)
     elements.append(subheader)
+    spacer = Spacer(1, 7)  # Adjust the height value
+    elements.append(spacer)
 
     # Add the description
     description_style = ParagraphStyle('DescriptionStyle', fontSize=9, fontName='Helvetica')
@@ -1004,19 +1085,12 @@ def transactions_report(request):
     description_text = 'All: %d Transactions' % workers_count
     description = Paragraph(description_text, style=description_style)
     elements.append(description)
-
+    alltransactions=transaction.objects.all()
     # Create the table data
-    workers = transaction.objects.all()
-    table_data = [['transactionid', 'location', 'transaction_state', 'timestamp']]
-    for i, worker in enumerate(workers, start=1):
-        table_data.append([
-            str(i),
-            worker.transactionid,
-            worker.location,
-            worker.transaction_state,
-            worker.timestamp,
-           
-        ])
+    table_data = [[ 'transactionid','location', 'transaction_state', 'timestamp']]
+    for client in alltransactions :
+        table_data.append([client.transactionid, client.location, client.transaction_state, client.timestamp])
+
 
     # Create the table and apply styles
     table = Table(table_data)
@@ -1031,9 +1105,161 @@ def transactions_report(request):
         ('GRID', (0, 0), (-1, -1), 1, colors.black)
     ])
     table.setStyle(table_style)
+    spacer = Spacer(1, 20)  # Adjust the height value
+    elements.append(spacer)
     elements.append(table)
 
     doc.build(elements)
 
     return response
 
+def blacklist_report(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="blacklist_report.pdf"'
+    elements = []
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    logo_path = "testapp/static/imarasmall.png"
+    logo = Image(logo_path, width=170, height=90)  # Adjust width and height as needed
+    elements.append(logo)
+    title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
+    title_text = 'IMARA BANK ' 
+    title = Paragraph(title_text, style=title_style)
+    elements.append(title)
+
+    clients = blacklist.objects.all()
+
+    table_data = [['blacklistid', 'transactionid','category']]
+    for client in clients:
+        table_data.append([client.blacklistid, client.transactionid, client.category])
+
+    table = Table(table_data)
+
+    style = TableStyle([('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0,0), (-1,0), 14),
+                    ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                    ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                    ('GRID', (0,0), (-1,-1), 1, colors.black)])
+    table.setStyle(style)
+    spacer = Spacer(1, 20)  # Adjust the height value
+    elements.append(spacer)
+    
+    elements.append(table)
+    doc.build(elements)
+
+    return response
+
+
+def transactions_report(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="transactions_report.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+
+    # Add the logo and title
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    logo_path = "testapp/static/imarasmall.png"
+    logo = Image(logo_path, width=170, height=90)  # Adjust width and height as needed
+    elements.append(logo)
+    title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
+    title_text = 'IMARA BANK ' 
+    title = Paragraph(title_text, style=title_style)
+    elements.append(title)
+
+
+    # Add the subheader
+    subheader_style = ParagraphStyle('SubheaderStyle', fontSize=14, fontName='Helvetica-Bold', underlineWidth=1, underlineColor=colors.black)
+    subheader_text = 'Detailed Transactions Report'
+    subheader = Paragraph(subheader_text, style=subheader_style)
+    spacer = Spacer(1, 7)  # Adjust the height value
+    elements.append(spacer)
+    elements.append(subheader)
+    spacer = Spacer(1, 7)  # Adjust the height value
+    elements.append(spacer)
+
+    # Add the description
+    description_style = ParagraphStyle('DescriptionStyle', fontSize=9, fontName='Helvetica')
+    workers_count =transaction.objects.count()
+    description_text = 'All: %d Transactions' % workers_count
+    description = Paragraph(description_text, style=description_style)
+    elements.append(description)
+    alltransactions=transaction.objects.all()
+    # Create the table data
+    table_data = [[ 'transactionid','location', 'transaction_state', 'timestamp']]
+    for client in alltransactions :
+        table_data.append([client.transactionid, client.location, client.transaction_state, client.timestamp])
+
+
+    # Create the table and apply styles
+    table = Table(table_data)
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.dimgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 19),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ])
+    table.setStyle(table_style)
+    spacer = Spacer(1, 20)  # Adjust the height value
+    elements.append(spacer)
+    elements.append(table)
+
+    doc.build(elements)
+
+    return response
+
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Spacer
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import Image, Paragraph
+from reportlab.lib.styles import ParagraphStyle
+
+def any_report(request, clients, table_data):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="parameterised_report.pdf"'
+    elements = []
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    logo_path = "testapp/static/imarasmall.png"
+    logo = Image(logo_path, width=170, height=90)  # Adjust width and height as needed
+    elements.append(logo)
+    title_style = ParagraphStyle('TitleStyle', fontSize=18, fontName='Helvetica-Bold', textColor=colors.black)
+    title_text = '                        IMARA BANK ' 
+    title = Paragraph(title_text, style=title_style)
+    elements.append(title)
+    subheader_style = ParagraphStyle('SubheaderStyle', fontSize=14, fontName='Helvetica-Bold', underlineWidth=1, underlineColor=colors.black)
+    subheader_text = 'Parameterised Report'
+    subheader = Paragraph(subheader_text, style=subheader_style)
+    spacer = Spacer(1, 7)  # Adjust the height value
+    elements.append(spacer)
+    elements.append(subheader)
+    for client in clients:
+        row = []
+        for attribute in table_data[0]:  # Assuming table_data[0] contains attribute names
+            row.append(getattr(client, attribute))
+        table_data.append(row)
+    # Use clients and table_data provided as function arguments
+    table = Table(table_data)
+
+    style = TableStyle([('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0,0), (-1,0), 14),
+                    ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                    ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                    ('GRID', (0,0), (-1,-1), 1, colors.black)])
+    table.setStyle(style)
+    spacer = Spacer(1, 20)  # Adjust the height value
+    elements.append(spacer)
+    
+    elements.append(table)
+
+    doc.build(elements)
+
+    return response
